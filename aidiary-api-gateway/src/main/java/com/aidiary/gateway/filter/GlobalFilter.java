@@ -33,8 +33,8 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
             if (config.isPreLogger()) {
                 log.info("GlobalFilter - Request ==> ");
                 log.info("URI : {}", String.valueOf(request.getPath()));
-                log.info("Params : {}", request.getQueryParams().toString());
-                log.info("Body : {}", request.getBody().toString());
+                log.info("Params : {}", request.getQueryParams());
+                log.info("Body : {}", request.getBody());
             }
 
             // Post Filter

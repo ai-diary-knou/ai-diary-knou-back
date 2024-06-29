@@ -26,15 +26,22 @@ public abstract class ResponseBundle {
                     .build();
         }
 
+        public static ResponseResult success(){
+            return ResponseResult.builder()
+                    .status(ErrorStatus.SUCCESS)
+                    .data(null)
+                    .build();
+        }
+
     }
 
     @Builder
     public record ErrorResponse (ErrorStatus status, String code, String message){
 
-        public static ErrorResponse of(ErrorCode errorCode) {
+        public static ErrorResponse of(ErrorCode errorCode, Throwable exception) {
             return ErrorResponse
                     .builder()
-                    .status(UNKNOWN_ERROR.equals(errorCode) ? ErrorStatus.ERROR : ErrorStatus.FAIL)
+                    .status(exception instanceof BaseException ? ErrorStatus.FAIL : ErrorStatus.ERROR)
                     .code(errorCode.name())
                     .message(errorCode.getMessage())
                     .build();

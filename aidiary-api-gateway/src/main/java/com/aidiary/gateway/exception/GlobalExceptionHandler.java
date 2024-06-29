@@ -47,7 +47,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 
             try {
 
-                ResponseBundle.ErrorResponse errorResponse = ResponseBundle.ErrorResponse.of(errorCode);
+                ResponseBundle.ErrorResponse errorResponse = ResponseBundle.ErrorResponse.of(errorCode, exception);
                 byte[] binaryErrorResponse = objectMapper.writeValueAsBytes(errorResponse);
                 log.info("GlobalExceptionHandler Info : ", exception);
                 return bufferFactory.wrap(binaryErrorResponse);
