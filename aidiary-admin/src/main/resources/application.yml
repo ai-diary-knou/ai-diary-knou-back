@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: aidiary-admin
+    name: admin-service
 
 eureka:
   client:

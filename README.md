@@ -50,8 +50,6 @@
 Success Example
 ```json
 {
-  "code": 200,
-  "message": "",
   "status": "SUCCESS",
   "data": {
     "id" : 1,
@@ -64,21 +62,9 @@ Success Example
 Error Example
 ```json
 {
-  "code": 400, // 기본 Http error code 외 커스텀 code 사용 가능하도록
-  "message": "Invalid Request Parameter",
-  "status": "INVALID_PARAMETER",
-  "errors": [ // error 메세지가 여러개인 경우
-    {
-      "domain": "example.com",
-      "status": "INVALID_USER_NAME",
-      "message": "Invalid Name Value : '_asdf12'. Allowed Regex:[a-zA-Z]"
-    },
-    {
-      "domain": "example.com",
-      "status": "INVALID_PHONE_NUMBER",
-      "message": "Invalid Phone Number Value : '#$%'. Allowed Regex:[]"
-    }
-  ]
+  "status": "FAIL", // FAIL(custom-exception), ERROR(system-error 500)
+  "code" : "INVALID_PARAMETER",
+  "message": "invalid email form - regex : ~~"
 }
 ```
 
@@ -91,7 +77,23 @@ Error Example
 - test : 테스트 코드, 리펙토링 테스트 코드 추가
 - chore : 빌드 업무 수정, 패키지 매니저 수정
 
+## Branch Commit Rule
+```shell
+- main으로 rebase
+- develop으로 squash 
+- feature 머지 후 삭제 
+```
+- main
+- develop
+- feature 
+
 ## CI/CD Process
+```shell
+-- Local : H2
+-- Develop : 
+[1] Azure Instance 
+[2] AWS RDS 
+```
 
 ## API
 회원

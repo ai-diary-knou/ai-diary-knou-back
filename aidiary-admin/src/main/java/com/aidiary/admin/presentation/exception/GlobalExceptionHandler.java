@@ -1,4 +1,4 @@
-package com.aidiary.gateway.exception;
+package com.aidiary.admin.presentation.exception;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.BaseException;
@@ -67,6 +67,6 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         } else if (exception instanceof BadRequestException){
             return INVALID_PARAMETER;
         }
-        return UNKNOWN_ERROR;
+        return  UNKNOWN_ERROR;
     }
 }

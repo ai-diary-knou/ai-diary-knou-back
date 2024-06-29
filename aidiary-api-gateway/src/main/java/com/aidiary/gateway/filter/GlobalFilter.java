@@ -31,15 +31,16 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
             ServerHttpResponse response = exchange.getResponse();
 
             if (config.isPreLogger()) {
-                log.info(String.valueOf(request.getPath()));
-                log.info(request.getQueryParams().toString());
-                log.info(request.getBody().toString());
+                log.info("GlobalFilter - Request ==> ");
+                log.info("URI : {}", String.valueOf(request.getPath()));
+                log.info("Params : {}", request.getQueryParams().toString());
+                log.info("Body : {}", request.getBody().toString());
             }
 
             // Post Filter
             return chain.filter(exchange).then(Mono.fromRunnable(() -> {
                 if (config.isPreLogger()) {
-                    log.info("Global Filter End : response code -> {}", response.getStatusCode());
+                    log.info("GlobalFilter - Response ==> {}", response.getStatusCode());
                 }
             }));
         };

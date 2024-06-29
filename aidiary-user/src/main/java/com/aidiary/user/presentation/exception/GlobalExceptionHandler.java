@@ -1,4 +1,4 @@
-package com.aidiary.gateway.exception;
+package com.aidiary.user.presentation.exception;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.BaseException;

@@ -3,7 +3,9 @@ server:
 
 spring:
   application:
-    name: aidiary-user
+    name: user-service
+  datasource:
+    url: jdbc:mysql://158.180.77.101:3306
 
 eureka:
   instance:
@@ -12,4 +14,4 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://127.0.0.1:8761/eureka

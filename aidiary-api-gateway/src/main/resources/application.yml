@@ -6,7 +6,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      default-zone: http://localhost:8761/eureka
+      default-zone: http://127.0.0.1:8761/eureka
 
 spring:
   application:
@@ -20,14 +20,14 @@ spring:
             preLogger: true
             postLogger: true
       routes:
-        - id: aidiary-user
-          uri: lb://AIDIARY-USER
+        - id: user-service
+          uri: lb://USER-SERVICE
           predicates:
-            - Path=/api/**
+            - Path=/api/v1/**
           filters:
             - name: UserLoggingFilter
-        - id: aidiary-admin
-          uri: lb://AIDIARY-ADMIN
+        - id: admin-service
+          uri: lb://ADMIN-SERVICE
           predicates:
             - Path=/admin/**
           filters:
