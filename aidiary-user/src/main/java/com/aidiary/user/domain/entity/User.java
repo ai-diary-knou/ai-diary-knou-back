@@ -1,6 +1,7 @@
 package com.aidiary.user.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,4 +27,12 @@ public class User extends BaseTimeEntity{
 
     private Integer loginAttemptCnt;
 
+    @Builder
+    public User(final String email, final String username, final String password, final Status status, final Integer loginAttemptCnt) {
+        this.email = email;
+        this.username = username;
+        this.password = password;
+        this.status = status;
+        this.loginAttemptCnt = loginAttemptCnt;
+    }
 }

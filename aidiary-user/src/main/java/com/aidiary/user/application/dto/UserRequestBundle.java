@@ -12,7 +12,7 @@ public abstract class UserRequestBundle {
 
     public record UserEmailAuthCodeVerifyRequest(String code) {}
 
-    public record UserRegisterRequest(String email, String nickname, String password, String rePassword){}
+    public record UserRegisterRequest(String email, String username, String password, String rePassword){}
 
     public record UserEmailAndAuthCode(String email, int code) {}
 }

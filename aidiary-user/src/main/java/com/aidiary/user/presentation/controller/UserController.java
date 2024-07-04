@@ -59,8 +59,9 @@ public class UserController {
         throw new UserException(ErrorCode.INVALID_PARAMETER);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseResult register(@RequestBody UserRegisterRequest request){
+        userService.register(request);
 
         return ResponseResult.success();
     }
