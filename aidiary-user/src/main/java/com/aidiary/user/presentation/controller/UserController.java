@@ -5,22 +5,26 @@ import com.aidiary.common.exception.BaseException;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
+import com.aidiary.user.application.service.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/users")
 @Slf4j
 public class UserController {
 
+    private final UserService userService;
+
     @PostMapping("/email/duplicate")
     public ResponseResult validateDuplicateEmail(@RequestBody UserEmailDuplicateValidateRequest request){
 
-        log.info("body : {}", request.email());
+        userService.validateDuplicateEmail(request.email());
 
-        throw new UserException(ErrorCode.USER_EMAIL_DUPLICATE);
-
+        return ResponseResult.success();
     }
 
     @PostMapping("/email/auth")
