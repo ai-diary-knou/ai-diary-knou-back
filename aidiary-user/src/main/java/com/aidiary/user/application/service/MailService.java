@@ -42,7 +42,7 @@ public class MailService {
         log.info("email = {}", email);
         log.info("code = {}", code);
         UserEmailAuths userEmailAuths = emailAuthsRepository.findByEmailAndCode(email, code)
-                .orElseThrow(() -> new UserException(ErrorCode.USER_EMAIL_AUTH_CODE_EXPIRED));
+                .orElseThrow(() -> new UserException(ErrorCode.AUTH_CODE_EXPIRED));
 
         userEmailAuths.updateConfirmedAt(LocalDateTime.now());
     }
