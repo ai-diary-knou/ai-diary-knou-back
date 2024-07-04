@@ -6,6 +6,8 @@ public abstract class UserRequestBundle {
 
     public record UserEmailDuplicateValidateRequest(String email) {}
 
+    public record UsernameDuplicateValidateRequest(String username) {}
+
     public record UserEmailAuthCodeSentRequest(String email) {}
 
     public record UserEmailAuthCodeVerifyRequest(String code) {}

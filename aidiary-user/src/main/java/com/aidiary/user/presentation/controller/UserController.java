@@ -42,6 +42,13 @@ public class UserController {
         return ResponseResult.success();
     }
 
+    @PostMapping("/username/duplicate")
+    public ResponseResult validateDuplicateUsername(@RequestBody UsernameDuplicateValidateRequest request) {
+        userService.validateDuplicateUsername(request.username());
+
+        return ResponseResult.success();
+    }
+
     @PostMapping("/email/verify")
     public ResponseResult verifyAuthCodeFromEmail(@RequestBody UserEmailAuthCodeVerifyRequest request){
 

@@ -19,4 +19,10 @@ public class UserService {
             throw new UserException(ErrorCode.USER_ALREADY_REGISTERED);
         }
     }
+
+    public void validateDuplicateUsername(final String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new UserException(ErrorCode.USER_ALREADY_REGISTERED);
+        }
+    }
 }
