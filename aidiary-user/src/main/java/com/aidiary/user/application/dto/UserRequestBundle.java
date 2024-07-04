@@ -10,4 +10,5 @@ public abstract class UserRequestBundle {
 
     public record UserRegisterRequest(String email, String nickname, String password, String rePassword){}
 
+    public record UserEmailAndAuthCode(String email, int code) {}
 }

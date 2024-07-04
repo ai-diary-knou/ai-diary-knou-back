@@ -4,26 +4,42 @@ import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
+import com.aidiary.user.application.service.MailService;
+import com.aidiary.user.application.service.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/users")
 @Slf4j
 public class UserController {
 
-    @GetMapping("/duplicate")
-    public ResponseResult validateDuplicateEmail(UserValidateDuplicateRequest request){
+    private final UserService userService;
+    private final MailService mailService;
 
-        throw new UserException(ErrorCode.USER_ALREADY_REGISTERED);
+    @PostMapping("/email/duplicate")
+    public ResponseResult validateDuplicateEmail(@RequestBody UserEmailDuplicateValidateRequest request){
 
+        userService.validateDuplicateEmail(request.email());
+
+        return ResponseResult.success();
     }
 
     @PostMapping("/email/auth")
     public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request){
 
-        throw new UserException(ErrorCode.UNKNOWN_ERROR);
+        int result = mailService.mailSend(request.email());
 
+        return ResponseResult.success(result);
+    }
+
+    @PutMapping("/email/auth")
+    public ResponseResult confirmAuthCode(@RequestBody UserEmailAndAuthCode request) {
+        mailService.confirmAuthCode(request.email(), request.code());
+
+        return ResponseResult.success();
     }
 
     @PostMapping("/email/verify")
