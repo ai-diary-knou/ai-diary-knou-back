@@ -2,14 +2,20 @@ package com.aidiary.common.enums;
 
 import lombok.Getter;
 
+/**
+ * 일반적인 Http Error Code를 따르되,
+ * 비즈니스 로직상의 에러는 600으로
+ */
 @Getter
 public enum ErrorCode {
 
+    // 공통 에러
     INVALID_PARAMETER(400, "Invalid Parameter. Please Check Request Documentation"),
     UNKNOWN_ERROR(500, "Unknown Server Error."),
-    USER_EMAIL_DUPLICATE(400, "Email Already Registered"),
-    USER_NICKNAME_DUPLICATE(400, "Nickname Already Taken"),
-    USER_EMAIL_AUTH_CODE_EXPIRED(500, "Email Auth Code Expired. Please Try Again");
+    AUTH_CODE_EXPIRED(600, "Auth Code Expired. Please Try Again"),
+
+    // 회원 관련
+    USER_ALREADY_REGISTERED(600, "User already registered. Please use another email or nickname");
 
     private final Integer code;
     private final String message;

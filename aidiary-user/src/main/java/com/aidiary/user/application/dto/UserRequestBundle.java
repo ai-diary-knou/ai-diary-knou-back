@@ -2,11 +2,13 @@ package com.aidiary.user.application.dto;
 
 public abstract class UserRequestBundle {
 
-    public record UserEmailDuplicateValidateRequest(String email) {}
+    public record UserValidateDuplicateRequest(String type, String value){}
 
     public record UserEmailAuthCodeSentRequest(String email) {}
 
-    public record UserNicknameDuplicateValidateRequest(String nickname) {}
+    public record UserEmailAuthCodeVerifyRequest(String code) {}
+
+    public record UserRegisterRequest(String email, String nickname, String password, String rePassword){}
 
     public record UserEmailAndAuthCode(String email, int code) {}
 }
