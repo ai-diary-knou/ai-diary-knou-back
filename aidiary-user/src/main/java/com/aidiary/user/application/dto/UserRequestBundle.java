@@ -8,4 +8,5 @@ public abstract class UserRequestBundle {
 
     public record UserNicknameDuplicateValidateRequest(String nickname) {}
 
+    public record UserEmailAndAuthCode(String email, int code) {}
 }
