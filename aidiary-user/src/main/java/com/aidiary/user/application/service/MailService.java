@@ -39,12 +39,16 @@ public class MailService {
 
     @Transactional
     public void confirmAuthCode(final String email, int code) {
+        LocalDateTime now = LocalDateTime.now();
         log.info("email = {}", email);
         log.info("code = {}", code);
         UserEmailAuths userEmailAuths = emailAuthsRepository.findByEmailAndCode(email, code)
-                .orElseThrow(() -> new UserException(ErrorCode.AUTH_CODE_EXPIRED));
+                .orElseThrow(() -> new UserException(ErrorCode.INVALID_PARAMETER));
 
-        userEmailAuths.updateConfirmedAt(LocalDateTime.now());
+        if (now.isAfter(userEmailAuths.getCreatedAt().plusMinutes(5))) {
+            throw new UserException(ErrorCode.AUTH_CODE_EXPIRED);
+        }
+        userEmailAuths.updateConfirmedAt(now);
     }
 
     private int createRandomNumber() {
