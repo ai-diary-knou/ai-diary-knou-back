@@ -22,7 +22,7 @@ public class UserController {
     @PostMapping("/email/duplicate")
     public ResponseResult validateDuplicateEmail(@RequestBody UserEmailDuplicateValidateRequest request){
 
-        userService.validateDuplicateEmail(request.email());
+        //userService.validateDuplicateEmail(request.email());
 
         return ResponseResult.success();
     }
@@ -30,14 +30,14 @@ public class UserController {
     @PostMapping("/email/auth")
     public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request){
 
-        int result = mailService.mailSend(request.email());
+        //int result = mailService.mailSend(request.email());
 
-        return ResponseResult.success(result);
+        return ResponseResult.success();
     }
 
     @PutMapping("/email/auth")
     public ResponseResult confirmAuthCode(@RequestBody UserEmailAndAuthCode request) {
-        mailService.confirmAuthCode(request.email(), request.code());
+        //mailService.confirmAuthCode(request.email(), request.code());
 
         return ResponseResult.success();
     }
