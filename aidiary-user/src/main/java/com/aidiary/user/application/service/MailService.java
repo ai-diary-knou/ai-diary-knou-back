@@ -18,24 +18,24 @@ import java.time.LocalDateTime;
 @Service
 public class MailService {
 
-    private final JavaMailSender mailSender;
+    //private final JavaMailSender mailSender;
     private final UserEmailAuthsRepository emailAuthsRepository;
 
-    public int mailSend(final String email) {
-        int code = createRandomNumber();
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setTo(email);
-        simpleMailMessage.setSubject("회원가입 인증번호입니다.");
-        simpleMailMessage.setText(String.valueOf(createRandomNumber()));
-        mailSender.send(simpleMailMessage);
-
-        emailAuthsRepository.save(UserEmailAuths.builder()
-                .email(email)
-                .code(code)
-                .createdAt(LocalDateTime.now())
-                .build());
-        return code;
-    }
+//    public int mailSend(final String email) {
+//        int code = createRandomNumber();
+//        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+//        simpleMailMessage.setTo(email);
+//        simpleMailMessage.setSubject("회원가입 인증번호입니다.");
+//        simpleMailMessage.setText(String.valueOf(createRandomNumber()));
+//        mailSender.send(simpleMailMessage);
+//
+//        emailAuthsRepository.save(UserEmailAuths.builder()
+//                .email(email)
+//                .code(code)
+//                .createdAt(LocalDateTime.now())
+//                .build());
+//        return code;
+//    }
 
     @Transactional
     public void confirmAuthCode(final String email, int code) {
