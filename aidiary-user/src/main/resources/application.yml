@@ -7,6 +7,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306
+    username: ${datasource.username}
+    password: ${datasource.password}
 
 #  mail:
 #    host: smtp.gmail.com
