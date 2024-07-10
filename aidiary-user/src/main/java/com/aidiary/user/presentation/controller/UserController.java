@@ -19,27 +19,28 @@ public class UserController {
     private final UserService userService;
     private final MailService mailService;
 
-    @PostMapping("/email/duplicate")
-    public ResponseResult validateDuplicateEmail(@RequestBody UserEmailDuplicateValidateRequest request){
+    @GetMapping("/duplicate")
+    public ResponseResult validateDuplicateEmail(UserValidateDuplicateRequest request){
 
-        //userService.validateDuplicateEmail(request.email());
+
+
+        return ResponseResult.success();
+    }
+
+    @PostMapping("/email/auth-code")
+    public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request){
+
+
 
         return ResponseResult.success();
     }
 
     @PostMapping("/email/auth")
-    public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request){
-
-        //int result = mailService.mailSend(request.email());
-
-        return ResponseResult.success();
-    }
-
-    @PutMapping("/email/auth")
     public ResponseResult confirmAuthCode(@RequestBody UserEmailAndAuthCode request) {
         //mailService.confirmAuthCode(request.email(), request.code());
 
         return ResponseResult.success();
+
     }
 
     @PostMapping("/email/verify")
@@ -55,7 +56,24 @@ public class UserController {
     @PostMapping
     public ResponseResult register(@RequestBody UserRegisterRequest request){
 
-        return ResponseResult.success();
+        //throw new UserException("Invalid Parameter. password and rePassword mismatch.", ErrorCode.INVALID_PARAMETER);
+        throw new UserException("Invalid Parameter. User already registered.", ErrorCode.INVALID_PARAMETER);
+
+    }
+
+    @PostMapping("/login")
+    public ResponseResult login(@RequestBody UserLoginRequest request){
+
+        throw new UserException(ErrorCode.USER_LOGIN_FAIL);
+
+    }
+
+    @PatchMapping
+    public ResponseResult updatePassword(@RequestBody UserPasswordUpdateRequest request){
+
+        throw new UserException(ErrorCode.USER_LOGIN_FAIL);
+
+        //return ResponseResult.success();
     }
 
 }
