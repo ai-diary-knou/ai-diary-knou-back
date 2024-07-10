@@ -42,6 +42,13 @@ public class UserController {
         return ResponseResult.success();
     }
 
+    @PostMapping("/username/duplicate")
+    public ResponseResult validateDuplicateUsername(@RequestBody UsernameDuplicateValidateRequest request) {
+        userService.validateDuplicateUsername(request.username());
+
+        return ResponseResult.success();
+    }
+
     @PostMapping("/email/verify")
     public ResponseResult verifyAuthCodeFromEmail(@RequestBody UserEmailAuthCodeVerifyRequest request){
 
@@ -52,8 +59,9 @@ public class UserController {
         throw new UserException(ErrorCode.INVALID_PARAMETER);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseResult register(@RequestBody UserRegisterRequest request){
+        userService.register(request);
 
         return ResponseResult.success();
     }

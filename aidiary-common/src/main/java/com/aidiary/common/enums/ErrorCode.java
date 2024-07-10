@@ -15,7 +15,9 @@ public enum ErrorCode {
     AUTH_CODE_EXPIRED(600, "Auth Code Expired. Please Try Again"),
 
     // 회원 관련
-    USER_ALREADY_REGISTERED(600, "User already registered. Please use another email or nickname");
+    USER_ALREADY_REGISTERED(600, "User already registered. Please use another email or nickname"),
+    MISMATCH_PASSWORD(700, "Mismatch Password. Please Try Again");
+
 
     private final Integer code;
     private final String message;
