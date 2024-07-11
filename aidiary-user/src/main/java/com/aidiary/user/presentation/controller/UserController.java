@@ -4,7 +4,6 @@ import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
-import com.aidiary.user.application.service.MailService;
 import com.aidiary.user.application.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final MailService mailService;
 
     @GetMapping("/duplicate")
     public ResponseResult validateDuplicateEmail(UserValidateDuplicateRequest request){
 
-
+        userService.validateUserDuplication(request);
 
         return ResponseResult.success();
     }
@@ -30,7 +28,7 @@ public class UserController {
     @PostMapping("/email/auth-code")
     public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request){
 
-
+        userService.createRandomCodeAndSendEmail(request.email());
 
         return ResponseResult.success();
     }
@@ -56,9 +54,8 @@ public class UserController {
     @PostMapping
     public ResponseResult register(@RequestBody UserRegisterRequest request){
 
-        //throw new UserException("Invalid Parameter. password and rePassword mismatch.", ErrorCode.INVALID_PARAMETER);
-        throw new UserException("Invalid Parameter. User already registered.", ErrorCode.INVALID_PARAMETER);
 
+        return ResponseResult.success();
     }
 
     @PostMapping("/login")

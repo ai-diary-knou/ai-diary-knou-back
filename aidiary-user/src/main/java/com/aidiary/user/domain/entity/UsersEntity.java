@@ -1,28 +1,27 @@
 package com.aidiary.user.domain.entity;
 
+import com.aidiary.common.enums.ActiveStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity(name = "users")
 @NoArgsConstructor
 @Getter
-@Table(name = "users")
-@Entity
-public class User extends BaseTimeEntity{
+public class UsersEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
     private Long id;
 
     private String email;
 
-    private String username;
+    private String nickname;
 
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private ActiveStatus activeStatus;
 
     private Integer loginAttemptCnt;
 
