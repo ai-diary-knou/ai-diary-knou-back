@@ -5,6 +5,7 @@ import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
 import com.aidiary.user.application.service.UserService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class UserController {
     }
 
     @PostMapping("/email/auth-code")
-    public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request){
+    public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request) throws MessagingException {
 
         userService.createRandomCodeAndSendEmail(request.email());
 

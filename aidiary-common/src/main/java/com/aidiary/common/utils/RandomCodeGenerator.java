@@ -20,7 +20,7 @@ public class RandomCodeGenerator {
 
         String permittedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&*123456789";
 
-        List<Character> charList = permittedLetters.chars().mapToObj(c -> (char) c).toList();
+        List<Character> charList = permittedLetters.chars().mapToObj(c -> (char) c).collect(Collectors.toList());
 
         Collections.shuffle(charList);
 
