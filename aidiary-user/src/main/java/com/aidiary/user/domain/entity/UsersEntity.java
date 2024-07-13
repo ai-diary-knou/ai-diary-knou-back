@@ -1,13 +1,17 @@
 package com.aidiary.user.domain.entity;
 
-import com.aidiary.common.enums.ActiveStatus;
+import com.aidiary.common.enums.UserStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "users")
+@AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Builder
 public class UsersEntity extends BaseEntity {
 
     @Id
@@ -21,7 +25,7 @@ public class UsersEntity extends BaseEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private ActiveStatus activeStatus;
+    private UserStatus status;
 
     private Integer loginAttemptCnt;
 

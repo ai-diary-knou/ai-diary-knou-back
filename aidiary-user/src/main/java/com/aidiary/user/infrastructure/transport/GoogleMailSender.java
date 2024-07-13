@@ -52,10 +52,7 @@ public class GoogleMailSender {
 
     }
 
-    public String generateEmailVerificationTemplate(String code){
-
-        String title = "[AiDiary] 인증 코드를 확인하고 회원가입을 완료하세요.";
-        String description = "회원 가입을 진심으로 축하드립니다! 아래의 인증 코드를 사용하여 이메일 인증을 완료해 주세요.";
+    public String generateEmailVerificationTemplate(String title, String description, String code){
 
         Context context = new Context();
         context.setVariable("title", title);

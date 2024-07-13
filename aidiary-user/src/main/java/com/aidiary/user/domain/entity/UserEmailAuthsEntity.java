@@ -1,6 +1,9 @@
 package com.aidiary.user.domain.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,5 +29,14 @@ public class UserEmailAuthsEntity{
     private LocalDateTime createdAt;
 
     private LocalDateTime confirmedAt;
+
+    public void updateCodeAndConfirmedAt(String code) {
+        this.code = code;
+        this.confirmedAt = null;
+    }
+
+    public void updateConfirmedAt(LocalDateTime confirmedTime) {
+        this.confirmedAt = confirmedTime;
+    }
 
 }

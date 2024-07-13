@@ -2,6 +2,7 @@ package com.aidiary.user.domain.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+
 import java.util.regex.Pattern;
 
 public class NicknameValidator implements ConstraintValidator<NicknameValid, String> {
@@ -12,9 +13,4 @@ public class NicknameValidator implements ConstraintValidator<NicknameValid, Str
     public boolean isValid(String nickname, ConstraintValidatorContext context) {
         return Pattern.compile(NICKNAME_REGEX).matcher(nickname).matches();
     }
-
-    public static boolean isValid(String nickname){
-        return Pattern.compile(NICKNAME_REGEX).matcher(nickname).matches();
-    }
-
 }

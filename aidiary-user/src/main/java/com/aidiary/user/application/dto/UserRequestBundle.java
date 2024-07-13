@@ -1,19 +1,22 @@
 package com.aidiary.user.application.dto;
 
+import com.aidiary.user.domain.validator.EmailValid;
+import com.aidiary.user.domain.validator.NicknameValid;
+import com.aidiary.user.domain.validator.PasswordValid;
+import jakarta.validation.constraints.NotBlank;
+
 public abstract class UserRequestBundle {
 
-    public record UserValidateDuplicateRequest(String type, String value) {}
+    public record UserValidateDuplicateRequest(@NotBlank String type, @NotBlank String value) {}
 
-    public record UserEmailAuthCodeSentRequest(String email) {}
+    public record UserEmailAuthCodeSentRequest(@NotBlank String type, @NotBlank  @EmailValid String email) {}
 
-    public record UserEmailAuthCodeVerifyRequest(String code) {}
+    public record UserRegisterRequest(@NotBlank @EmailValid String email, @NotBlank @NicknameValid String nickname, @NotBlank @PasswordValid String password, @NotBlank @PasswordValid String rePassword){}
 
-    public record UserRegisterRequest(String email, String nickname, String password, String rePassword){}
+    public record UserLoginRequest(@NotBlank @EmailValid String email, @NotBlank @PasswordValid String password){}
 
-    public record UserLoginRequest(String email, String password){}
+    public record UserEmailAndAuthCode(@NotBlank @EmailValid String email, @NotBlank String code) {}
 
-    public record UserEmailAndAuthCode(String email, int code) {}
-
-    public record UserPasswordUpdateRequest(String originalPassword, String newPassword){}
+    public record UserPasswordUpdateRequest(@NotBlank @PasswordValid String password, @NotBlank @PasswordValid String rePassword){}
 
 }

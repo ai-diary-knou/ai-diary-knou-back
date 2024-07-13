@@ -8,10 +8,10 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = EmailValidator.class)
-public @interface EmailValid {
+@Constraint(validatedBy = PasswordValidator.class)
+public @interface PasswordValid {
 
-    String message() default "Invalid Parameter. Email can only be ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$";
+    String message() default "Invalid Parameter. Password can only be ^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[~!@#$%^&*()+|=])[A-Za-z\\d~!@#$%^&*()+|=]{8,16}$";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 

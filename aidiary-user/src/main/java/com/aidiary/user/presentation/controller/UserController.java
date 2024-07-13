@@ -6,6 +6,7 @@ import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
 import com.aidiary.user.application.service.UserService;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -27,47 +28,38 @@ public class UserController {
     }
 
     @PostMapping("/email/auth-code")
-    public ResponseResult sendAuthCodeToEmail(@RequestBody UserEmailAuthCodeSentRequest request) throws MessagingException {
+    public ResponseResult sendAuthCodeToEmail(@Valid @RequestBody UserEmailAuthCodeSentRequest request) throws MessagingException {
 
-        userService.createRandomCodeAndSendEmail(request.email());
+        userService.createRandomCodeAndSendEmail(request);
 
         return ResponseResult.success();
     }
 
     @PostMapping("/email/auth")
-    public ResponseResult confirmAuthCode(@RequestBody UserEmailAndAuthCode request) {
-        //mailService.confirmAuthCode(request.email(), request.code());
+    public ResponseResult confirmAuthCode(@Valid @RequestBody UserEmailAndAuthCode request) {
+
+        userService.confirmAuthCodeByEmail(request);
 
         return ResponseResult.success();
 
     }
-
-    @PostMapping("/email/verify")
-    public ResponseResult verifyAuthCodeFromEmail(@RequestBody UserEmailAuthCodeVerifyRequest request){
-
-        if ("11111".equals(request.code())) {
-            throw new UserException(ErrorCode.AUTH_CODE_EXPIRED);
-        }
-
-        throw new UserException(ErrorCode.INVALID_PARAMETER);
-    }
-
     @PostMapping
-    public ResponseResult register(@RequestBody UserRegisterRequest request){
+    public ResponseResult register(@Valid @RequestBody UserRegisterRequest request){
 
+        userService.register(request);
 
         return ResponseResult.success();
     }
 
     @PostMapping("/login")
-    public ResponseResult login(@RequestBody UserLoginRequest request){
+    public ResponseResult login(@Valid @RequestBody UserLoginRequest request){
 
         throw new UserException(ErrorCode.USER_LOGIN_FAIL);
 
     }
 
     @PatchMapping
-    public ResponseResult updatePassword(@RequestBody UserPasswordUpdateRequest request){
+    public ResponseResult updatePassword(@Valid @RequestBody UserPasswordUpdateRequest request){
 
         throw new UserException(ErrorCode.USER_LOGIN_FAIL);
 
