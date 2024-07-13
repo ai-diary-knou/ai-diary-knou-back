@@ -4,6 +4,7 @@ import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.enums.UserStatus;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.utils.RandomCodeGenerator;
+import com.aidiary.common.utils.SHA256Util;
 import com.aidiary.user.application.dto.UserRequestBundle.UserEmailAndAuthCode;
 import com.aidiary.user.application.dto.UserRequestBundle.UserEmailAuthCodeSentRequest;
 import com.aidiary.user.application.dto.UserRequestBundle.UserRegisterRequest;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -121,7 +123,7 @@ public class UserService {
     }
 
 
-    public void register(UserRegisterRequest request) {
+    public void register(UserRegisterRequest request) throws NoSuchAlgorithmException {
 
         UserEmailAuthsEntity userEmailAuthsEntity = jpaUserEmailAuthsRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserException(ErrorCode.EMAIL_NOT_AUTHORIZED));
@@ -138,7 +140,7 @@ public class UserService {
                 UsersEntity.builder()
                         .email(request.email())
                         .nickname(request.nickname())
-                        //.password(rsaEncryptedBase64Password)
+                        .password(SHA256Util.getHashString(request.password()))
                         .status(UserStatus.ACTIVE)
                         .loginAttemptCnt(0)
                         .build()

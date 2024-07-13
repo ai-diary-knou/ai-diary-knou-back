@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/users")
@@ -46,9 +48,23 @@ public class UserController {
     @PostMapping
     public ResponseResult register(@Valid @RequestBody UserRegisterRequest request){
 
-        userService.register(request);
+        try {
 
-        return ResponseResult.success();
+            userService.register(request);
+            return ResponseResult.success();
+
+        } catch (NoSuchAlgorithmException e) {
+
+            log.info("비밀번호 암호화 하는 과정에서 오류 발생", e);
+            throw new UserException(ErrorCode.UNKNOWN_ERROR);
+
+        } catch (Exception e) {
+
+            log.info("알 수 없는 에러가 발생했습니다.", e);
+            throw new UserException(ErrorCode.UNKNOWN_ERROR);
+
+        }
+
     }
 
     @PostMapping("/login")
