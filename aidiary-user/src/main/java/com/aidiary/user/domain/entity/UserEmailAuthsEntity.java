@@ -35,8 +35,11 @@ public class UserEmailAuthsEntity{
         this.confirmedAt = null;
     }
 
+    public void updateCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public void updateConfirmedAt(LocalDateTime confirmedTime) {
         this.confirmedAt = confirmedTime;
     }
-
 }

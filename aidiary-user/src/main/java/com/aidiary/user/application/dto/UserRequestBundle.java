@@ -17,6 +17,6 @@ public abstract class UserRequestBundle {
 
     public record UserEmailAndAuthCode(@NotBlank @EmailValid String email, @NotBlank String code) {}
 
-    public record UserPasswordUpdateRequest(@NotBlank @PasswordValid String password, @NotBlank @PasswordValid String rePassword){}
+    public record UserPasswordUpdateRequest(@NotBlank String email, @NotBlank String code, @NotBlank @PasswordValid String password, @NotBlank @PasswordValid String rePassword){}
 
 }

@@ -39,6 +39,14 @@ public class UsersEntity extends BaseEntity implements UserDetails {
         this.loginAttemptCnt = loginAttemptCnt;
     }
 
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
+    public void updateStatus(UserStatus status) {
+        this.status = status;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;

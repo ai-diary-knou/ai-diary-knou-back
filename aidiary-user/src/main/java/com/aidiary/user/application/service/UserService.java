@@ -5,11 +5,7 @@ import com.aidiary.common.enums.UserStatus;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.utils.RandomCodeGenerator;
 import com.aidiary.common.utils.SHA256Util;
-import com.aidiary.user.application.dto.UserRequestBundle.UserLoginRequest;
-import com.aidiary.user.application.dto.UserRequestBundle.UserEmailAndAuthCode;
-import com.aidiary.user.application.dto.UserRequestBundle.UserEmailAuthCodeSentRequest;
-import com.aidiary.user.application.dto.UserRequestBundle.UserRegisterRequest;
-import com.aidiary.user.application.dto.UserRequestBundle.UserValidateDuplicateRequest;
+import com.aidiary.user.application.dto.UserRequestBundle.*;
 import com.aidiary.user.application.service.security.JwtTokenProvider;
 import com.aidiary.user.application.service.security.JwtTokenProvider.UserClaims;
 import com.aidiary.user.domain.entity.UserEmailAuthsEntity;
@@ -27,9 +23,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
+
+import static com.aidiary.common.enums.UserStatus.ACTIVE;
+import static com.aidiary.common.enums.UserStatus.BLOCKED;
 import static org.springframework.security.core.userdetails.User.withUsername;
 
 @RequiredArgsConstructor
@@ -82,6 +83,7 @@ public class UserService implements UserDetailsService {
 
         if (optionalUserEmailAuths.isPresent()) {
             UserEmailAuthsEntity userEmailAuthsEntity = optionalUserEmailAuths.get();
+            userEmailAuthsEntity.updateCreatedAt(LocalDateTime.now());
             userEmailAuthsEntity.updateCodeAndConfirmedAt(randomCode);
         } else {
             jpaUserEmailAuthsRepository.save(
@@ -185,18 +187,26 @@ public class UserService implements UserDetailsService {
                 .build();
     }
 
-    @Transactional
     public void login(UserLoginRequest request, HttpServletResponse response) throws NoSuchAlgorithmException {
 
         UsersEntity usersEntity = jpaUsersRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
 
+        if (!usersEntity.isAccountNonExpired()) {
+            throw new UserException(ErrorCode.USER_ALREADY_SIGNED_OUT);
+        }
+
+        if (!usersEntity.isAccountNonLocked()){
+            throw new UserException(ErrorCode.USER_LOGIN_LOCKED);
+        }
+
         if (!usersEntity.getPassword().equals(SHA256Util.getHashString(request.password()))) {
-            log.info("password : " + usersEntity.getPassword());
-            log.info("yours : " + SHA256Util.getHashString(request.password()));
             usersEntity.updateLoginAttemptCnt(usersEntity.getLoginAttemptCnt() + 1);
-            String failMessage = ErrorCode.USER_LOGIN_FAIL.getMessage().replace("{loginAttemptCnt}", String.valueOf(usersEntity.getLoginAttemptCnt()));
-            throw new UserException(failMessage, ErrorCode.USER_LOGIN_FAIL);
+            if (usersEntity.getLoginAttemptCnt() == 5) {
+                usersEntity.updateStatus(BLOCKED);
+            }
+            jpaUsersRepository.save(usersEntity);
+            throw new UserException(getLoginFailMessage(usersEntity.getLoginAttemptCnt()), ErrorCode.USER_LOGIN_FAIL);
         }
 
         UserClaims userClaims = UserClaims.builder()
@@ -208,6 +218,40 @@ public class UserService implements UserDetailsService {
         String token = jwtTokenProvider.createToken(userClaims);
         jwtTokenProvider.setCookieByJwtToken(response, token);
         usersEntity.updateLoginAttemptCnt(0);
+        jpaUsersRepository.save(usersEntity);
     }
 
+    private static String getLoginFailMessage(Integer loginAttemptCnt) {
+        return ErrorCode.USER_LOGIN_FAIL.getMessage().replace("{loginAttemptCnt}", String.valueOf(loginAttemptCnt));
+    }
+
+    @Transactional
+    public void updatePassword(String email, UserPasswordUpdateRequest request) throws NoSuchAlgorithmException {
+
+        UserEmailAuthsEntity userEmailAuthsEntity = jpaUserEmailAuthsRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UserException(ErrorCode.EMAIL_NOT_AUTHORIZED));
+
+        if (!userEmailAuthsEntity.getCode().equals(request.code()) || Objects.isNull(userEmailAuthsEntity.getConfirmedAt())) {
+            throw new UserException(ErrorCode.EMAIL_NOT_AUTHORIZED);
+        }
+
+        UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
+
+        if (!usersEntity.isAccountNonExpired()) {
+            throw new UserException(ErrorCode.USER_ALREADY_SIGNED_OUT);
+        }
+
+        if (!request.password().equals(request.rePassword())) {
+            throw new UserException("Invalid Parameter. password and rePassword mismatch.", ErrorCode.INVALID_PARAMETER);
+        }
+
+        usersEntity.updatePassword(SHA256Util.getHashString(request.password()));
+        usersEntity.updateLoginAttemptCnt(0);
+
+        if (!usersEntity.isAccountNonLocked()){
+            usersEntity.updateStatus(ACTIVE);
+        }
+
+    }
 }

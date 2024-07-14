@@ -15,6 +15,17 @@ import java.util.Objects;
 @Slf4j
 public class GlobalExceptionHandler {
 
+
+    @ExceptionHandler(Exception.class)
+    public ErrorResponse handleException(Exception e){
+        log.info("Unknown Error ::", e);
+        return ErrorResponse.builder()
+                .status(ErrorStatus.ERROR)
+                .code(ErrorCode.UNKNOWN_ERROR.name())
+                .message(e.getMessage())
+                .build();
+    }
+
     @ExceptionHandler(UserException.class)
     public ErrorResponse handleUserException(UserException e){
         return ErrorResponse.builder()
