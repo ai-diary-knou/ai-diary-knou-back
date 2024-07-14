@@ -2,6 +2,7 @@ package com.aidiary.user.presentation.filter;
 
 import com.aidiary.user.application.service.security.JwtTokenProvider;
 import com.aidiary.user.application.service.security.JwtTokenProvider.UserClaims;
+import com.aidiary.user.domain.entity.UsersEntity;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,14 +42,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userClaims.getEmail());
-        if (!userClaims.getEmail().equals(userDetails.getUsername())) {
+        UsersEntity usersEntity = (UsersEntity) userDetailsService.loadUserByUsername(userClaims.getEmail());
+        if (!userClaims.getEmail().equals(usersEntity.getUsername())) {
             filterChain.doFilter(request, response);
             return;
         }
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                new UsernamePasswordAuthenticationToken(usersEntity, null, usersEntity.getAuthorities());
         usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
 

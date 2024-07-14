@@ -27,7 +27,8 @@ public class SecurityConfiguration{
             "/api/v1/users/email/auth-code",
             "/api/v1/users/email/auth",
             "/api/v1/users/login",
-            "/api/v1/users/password"
+            "/api/v1/users/password",
+            "/api/v1/diaries/**"
     };
 
     @Bean

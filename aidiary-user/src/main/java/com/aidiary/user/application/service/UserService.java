@@ -165,14 +165,8 @@ public class UserService implements UserDetailsService {
         UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
 
-        User.UserBuilder builder = withUsername(usersEntity.getEmail());
-        try {
-            builder.password(SHA256Util.getHashString(usersEntity.getPassword()));
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        return usersEntity;
 
-        return builder.build();
     }
 
     public UserClaims getUserClaims(String email){

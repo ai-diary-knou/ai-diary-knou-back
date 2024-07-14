@@ -33,6 +33,11 @@ spring:
   jwt:
     secret-key: ${JWT_KEY}
     expire-time: 180000 # 3 x 60 x 1000
+  encryptor:
+    seed-key: ${SEED_KEY}
+openapi:
+  openai:
+    key: ${OPEN_AI_KEY}
 
 logging:
   level:
