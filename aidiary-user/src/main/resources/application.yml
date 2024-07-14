@@ -7,13 +7,13 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
-    username: ${datasource.username}
-    password: ${datasource.password}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${mail.user}
-    password: ${mail.password}
+    username: ${MAIL_USER}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -31,7 +31,7 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
   jwt:
-    secret-key: ${jwt.key}
+    secret-key: ${JWT_KEY}
     expire-time: 180000 # 3 x 60 x 1000
 
 logging:
