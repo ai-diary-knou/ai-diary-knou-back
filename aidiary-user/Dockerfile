@@ -2,4 +2,7 @@ FROM gradle:jdk17
 VOLUME /aidiary-user
 ARG JAR_FILE=build/libs/*-SNAPSHOT.jar
 COPY ${JAR_FILE} aidiary-user.jar
-ENTRYPOINT ["nohup", "java", "-jar", "aidiary-user.jar", "--datasource.username=${DATASOURCE_USERNAME}", "--datasource.password=${DATASOURCE_PASSWORD}","&"]
+ENTRYPOINT ["nohup", "java", "-jar", "aidiary-user.jar",
+  "--datasource.username=${DATASOURCE_USERNAME}", "--datasource.password=${DATASOURCE_PASSWORD}",
+  "--mail.user=${MAIL_USER}", "--mail.password=${MAIL_PASSWORD}",
+  "&"]

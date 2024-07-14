@@ -60,8 +60,7 @@ public class UserController {
 
         } catch (Exception e) {
 
-            log.info("알 수 없는 에러가 발생했습니다.", e);
-            throw new UserException(ErrorCode.UNKNOWN_ERROR);
+            throw e;
 
         }
 
