@@ -226,7 +226,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void updatePassword(String email, UserPasswordUpdateRequest request) throws NoSuchAlgorithmException {
+    public void updatePassword(UserPasswordUpdateRequest request) throws NoSuchAlgorithmException {
 
         UserEmailAuthsEntity userEmailAuthsEntity = jpaUserEmailAuthsRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UserException(ErrorCode.EMAIL_NOT_AUTHORIZED));
@@ -235,7 +235,7 @@ public class UserService implements UserDetailsService {
             throw new UserException(ErrorCode.EMAIL_NOT_AUTHORIZED);
         }
 
-        UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
+        UsersEntity usersEntity = jpaUsersRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
 
         if (!usersEntity.isAccountNonExpired()) {

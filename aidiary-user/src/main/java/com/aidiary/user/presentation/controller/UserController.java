@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
 
 @RequiredArgsConstructor
 @RestController
@@ -84,11 +83,11 @@ public class UserController {
     }
 
     @PatchMapping("/password")
-    public ResponseResult updatePassword(Principal principal, @Valid @RequestBody UserPasswordUpdateRequest request){
+    public ResponseResult updatePassword(@Valid @RequestBody UserPasswordUpdateRequest request){
 
         try {
 
-            userService.updatePassword(principal.getName(), request);
+            userService.updatePassword(request);
             return ResponseResult.success();
 
         } catch (UserException e) {
