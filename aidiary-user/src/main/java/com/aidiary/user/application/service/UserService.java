@@ -5,33 +5,42 @@ import com.aidiary.common.enums.UserStatus;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.utils.RandomCodeGenerator;
 import com.aidiary.common.utils.SHA256Util;
+import com.aidiary.user.application.dto.UserRequestBundle.UserLoginRequest;
 import com.aidiary.user.application.dto.UserRequestBundle.UserEmailAndAuthCode;
 import com.aidiary.user.application.dto.UserRequestBundle.UserEmailAuthCodeSentRequest;
 import com.aidiary.user.application.dto.UserRequestBundle.UserRegisterRequest;
 import com.aidiary.user.application.dto.UserRequestBundle.UserValidateDuplicateRequest;
+import com.aidiary.user.application.service.security.JwtTokenProvider;
+import com.aidiary.user.application.service.security.JwtTokenProvider.UserClaims;
 import com.aidiary.user.domain.entity.UserEmailAuthsEntity;
 import com.aidiary.user.domain.entity.UsersEntity;
 import com.aidiary.user.domain.repository.JpaUserEmailAuthsRepository;
 import com.aidiary.user.domain.repository.JpaUsersRepository;
 import com.aidiary.user.infrastructure.transport.GoogleMailSender;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import static org.springframework.security.core.userdetails.User.withUsername;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final JpaUsersRepository jpaUsersRepository;
     private final JpaUserEmailAuthsRepository jpaUserEmailAuthsRepository;
     private final GoogleMailSender googleMailSender;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public void validateUserDuplication(UserValidateDuplicateRequest request) {
 
@@ -147,4 +156,58 @@ public class UserService {
         );
 
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+
+        UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
+
+        User.UserBuilder builder = withUsername(usersEntity.getEmail());
+        try {
+            builder.password(SHA256Util.getHashString(usersEntity.getPassword()));
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+
+        return builder.build();
+    }
+
+    public UserClaims getUserClaims(String email){
+
+        UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
+
+        return UserClaims.builder()
+                .userId(usersEntity.getId())
+                .email(usersEntity.getEmail())
+                .nickname(usersEntity.getNickname())
+                .build();
+    }
+
+    @Transactional
+    public void login(UserLoginRequest request, HttpServletResponse response) throws NoSuchAlgorithmException {
+
+        UsersEntity usersEntity = jpaUsersRepository.findByEmail(request.email())
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
+
+        if (!usersEntity.getPassword().equals(SHA256Util.getHashString(request.password()))) {
+            log.info("password : " + usersEntity.getPassword());
+            log.info("yours : " + SHA256Util.getHashString(request.password()));
+            usersEntity.updateLoginAttemptCnt(usersEntity.getLoginAttemptCnt() + 1);
+            String failMessage = ErrorCode.USER_LOGIN_FAIL.getMessage().replace("{loginAttemptCnt}", String.valueOf(usersEntity.getLoginAttemptCnt()));
+            throw new UserException(failMessage, ErrorCode.USER_LOGIN_FAIL);
+        }
+
+        UserClaims userClaims = UserClaims.builder()
+                .userId(usersEntity.getId())
+                .email(usersEntity.getEmail())
+                .nickname(usersEntity.getNickname())
+                .build();
+
+        String token = jwtTokenProvider.createToken(userClaims);
+        jwtTokenProvider.setCookieByJwtToken(response, token);
+        usersEntity.updateLoginAttemptCnt(0);
+    }
+
 }

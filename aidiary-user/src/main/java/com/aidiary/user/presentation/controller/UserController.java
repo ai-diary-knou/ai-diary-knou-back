@@ -6,6 +6,7 @@ import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
 import com.aidiary.user.application.service.UserService;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,9 +68,17 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseResult login(@Valid @RequestBody UserLoginRequest request){
+    public ResponseResult login(@Valid @RequestBody UserLoginRequest request, HttpServletResponse response){
 
-        throw new UserException(ErrorCode.USER_LOGIN_FAIL);
+        try {
+            userService.login(request, response);
+            return ResponseResult.success();
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            log.info("Login Failed :", e);
+            throw new UserException("Login Failed by unknown reason.", ErrorCode.USER_LOGIN_FAIL);
+        }
 
     }
 

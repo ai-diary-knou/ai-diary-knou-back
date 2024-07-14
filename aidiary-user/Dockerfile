@@ -5,4 +5,5 @@ COPY ${JAR_FILE} aidiary-user.jar
 ENTRYPOINT ["nohup", "java", "-jar", "aidiary-user.jar",
   "--datasource.username=${DATASOURCE_USERNAME}", "--datasource.password=${DATASOURCE_PASSWORD}",
   "--mail.user=${MAIL_USER}", "--mail.password=${MAIL_PASSWORD}",
+  "--jwt.key=${JWT_KEY}",
   "&"]
