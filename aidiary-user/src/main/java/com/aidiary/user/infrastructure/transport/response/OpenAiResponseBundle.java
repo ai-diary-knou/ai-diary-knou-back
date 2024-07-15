@@ -31,7 +31,7 @@ public class OpenAiResponseBundle {
 
     public record OpenAiContent(
             OpenAiProperties properties,
-            OpenAiSummaries summaries
+            String literarySummary
     ){}
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -61,11 +61,6 @@ public class OpenAiResponseBundle {
     public record OpenAiWord(
             String text,
             int scale
-    ) {}
-
-    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-    public record OpenAiSummaries(
-            String literarySummary
     ) {}
 
 }

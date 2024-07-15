@@ -40,10 +40,10 @@ public class DiaryController {
     }
 
     @PostMapping
-    public ResponseResult saveDiary(@AuthenticationPrincipal UserDetails userDetails, @RequestBody DiaryCreateRequest request){
+    public ResponseResult saveDiary(@AuthenticationPrincipal UsersEntity usersEntity, @RequestBody DiaryCreateRequest request){
 
         try {
-            diaryService.saveDiaryAfterOpenAiAnalysis((UsersEntity)userDetails, request);
+            diaryService.saveDiaryAfterOpenAiAnalysis(usersEntity, request);
             return ResponseResult.success();
         } catch (Exception e) {
             log.info("Error :: ", e);

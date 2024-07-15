@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Component
@@ -33,6 +35,7 @@ public class OpenAiTransporter {
 
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public OpenAiAnalysisRes getAnalysisFromTurbo3Point5(String userContent) throws JsonProcessingException {
 
         String authorization = "Bearer " + openAiKey;
@@ -43,9 +46,9 @@ public class OpenAiTransporter {
                 "For writing, use milk font. Properties include emotions, self_thoughts, core_values,",
                 "recommended_actions, and additionals. The summaries include literary_summary.",
                 "For emotions, self_thoughts, and core_values, sentences representing emotional states, self-understanding,",
-                "and core values that can be found in the diary are sequentially delivered as content, and a list of words as words.",
-                "All words have text and scale information. Word information is contained in the text,",
-                "and numbers from 0 to 10 indicating the degree of positivity and negativity are contained in the scale.",
+                "and core values that can be found in the diary are sequentially delivered as one-line content,",
+                "and a list of words as words. All words have text and scale information.",
+                "Word information is contained in the text, and numbers from 0 to 10 indicating the degree of positivity and negativity are contained in the scale.",
                 "recommended_actions consists of a list of actions that can be recommended through the diary.",
                 "Additionals consists of a list of additional psychological analysis contents that can be analyzed for the diary.",
                 "literary_summary contains one-line sentences from famous books or created literary one-line sentences",
