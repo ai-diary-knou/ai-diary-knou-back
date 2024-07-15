@@ -2,7 +2,6 @@ package com.aidiary.user.presentation.filter;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.enums.ErrorStatus;
-import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle;
 import com.aidiary.user.application.service.security.JwtTokenProvider;
 import com.aidiary.user.application.service.security.JwtTokenProvider.UserClaims;
@@ -12,6 +11,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -21,7 +21,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 
 @Component
@@ -42,10 +44,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
 
+            if (isAllPermittedPath(request) || isPostPermittedPath(request)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String token = jwtTokenProvider.getJwtTokenFromCookie(request);
             UserClaims userClaims = StringUtils.hasText(token) ? jwtTokenProvider.extractClaimsFromToken(token) : null;
 
-            if (Objects.isNull(userClaims) || jwtTokenProvider.isValidToken(token)) {
+            if (Objects.isNull(userClaims) || !jwtTokenProvider.isValidToken(token)) {
                 throw new AuthenticationException("JWT token is expired or invalid"){};
             }
 
@@ -91,4 +98,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
     }
+
+    private static boolean isAllPermittedPath(HttpServletRequest request) {
+        String[] permittedAllPaths = {
+                "/api/v1/users/duplicate",
+                "/api/v1/users/email/auth-code",
+                "/api/v1/users/email/auth",
+                "/api/v1/users/login",
+                "/api/v1/users/password"
+        };
+        return Arrays.stream(permittedAllPaths).anyMatch(request.getRequestURI()::startsWith);
+    }
+
+    private static boolean isPostPermittedPath(HttpServletRequest request) {
+
+        String[] permittedPostPaths = {
+                "/api/v1/users"
+        };
+
+        return Arrays.stream(permittedPostPaths)
+                .anyMatch(path ->
+                        HttpMethod.POST.name().equals(request.getMethod()) && path.startsWith(request.getRequestURI())
+                );
+    }
+
 }

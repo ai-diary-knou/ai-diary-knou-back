@@ -34,8 +34,7 @@ public class SecurityConfiguration{
             "/api/v1/users/email/auth",
             "/api/v1/users/login",
             "/api/v1/users/password",
-            "/api/v1/users/me",
-            "/api/v1/diaries/**"
+            "/api/v1/users/me"
     };
 
     @Bean
@@ -50,17 +49,16 @@ public class SecurityConfiguration{
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/users")
                     .permitAll()
-                    .requestMatchers("/api/v1/users/me", "/api/v1/users/logout")
+                    .requestMatchers("/api/v1/users/me", "/api/v1/users/logout", "/api/v1/diaries", "/api/v1/diaries/**")
                     .authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .accessDeniedHandler(accessDeniedHandler()) // Configure AccessDeniedHandler
+                        .accessDeniedHandler(accessDeniedHandler())
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         ;
-
 
         return http.build();
     }
