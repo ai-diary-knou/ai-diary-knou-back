@@ -4,9 +4,7 @@ import com.aidiary.common.enums.DiarySentenceType;
 import com.aidiary.common.enums.DiaryWordType;
 import com.aidiary.user.application.dto.DiaryRequestBundle.DiariesOfMonthGetRequest;
 import com.aidiary.user.application.dto.DiaryRequestBundle.DiaryCreateRequest;
-import com.aidiary.user.application.dto.DiaryResponseBundle.DiaryOutline;
-import com.aidiary.user.application.dto.DiaryResponseBundle.MainReportResponse;
-import com.aidiary.user.application.dto.DiaryResponseBundle.MonthlyReportResponse;
+import com.aidiary.user.application.dto.DiaryResponseBundle.*;
 import com.aidiary.user.domain.entity.DailyAnalysisSentencesEntity;
 import com.aidiary.user.domain.entity.DailyAnalysisWordsEntity;
 import com.aidiary.user.domain.entity.DiariesEntity;
@@ -16,10 +14,7 @@ import com.aidiary.user.domain.repository.JpaDailyAnalysisWordsRepository;
 import com.aidiary.user.domain.repository.JpaDiariesRepository;
 import com.aidiary.user.infrastructure.encryptor.HybridDiaryEncryptor;
 import com.aidiary.user.infrastructure.transport.OpenAiTransporter;
-import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle;
 import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,7 +65,7 @@ public class DiaryService {
                 .build();
     }
 
-    public void saveDiaryAfterOpenAiAnalysis(UsersEntity usersEntity, DiaryCreateRequest request) throws Exception {
+    public DiaryDetail saveDiaryAfterOpenAiAnalysis(UsersEntity usersEntity, DiaryCreateRequest request) throws Exception {
 
 
         OpenAiContent openAiContent = openAiTransporter.getAnalysisContentFromTurbo3Point5(request.content());
@@ -96,7 +91,7 @@ public class DiaryService {
         // sentence 저장
         List<String> recommendedActions = openAiContent.properties().recommendedActions();
         List<String> additionals = openAiContent.properties().additionals();
-        String literarySummary = openAiContent.literarySummary();
+        String literarySummary = openAiContent.summaries().literarySummary();
 
         saveSentences(usersEntity, diariesEntity, DiarySentenceType.EMOTION, openAiEmotions.content());
         saveSentences(usersEntity, diariesEntity, DiarySentenceType.SELF_THOUGHT, openAiSelfThoughts.content());
@@ -105,6 +100,16 @@ public class DiaryService {
         saveSentences(usersEntity, diariesEntity, DiarySentenceType.ADDITIONAL, additionals);
         saveSentences(usersEntity, diariesEntity, DiarySentenceType.LITERARY_SUMMARY, literarySummary);
 
+        return DiaryDetail.builder()
+                .entryDate(request.entryDate())
+                .emotions(DiaryEmotions.fromOpenAiEmotions(openAiContent.properties().emotions()))
+                .selfThoughts(DiarySelfThoughts.fromOpenAiSelfThoughts(openAiContent.properties().selfThoughts()))
+                .coreValues(DiaryCoreValues.fromOpenAiCoreValues(openAiContent.properties().coreValues()))
+                .recommendedActions(openAiContent.properties().recommendedActions())
+                .additionals(openAiContent.properties().additionals())
+                .literarySummary(literarySummary)
+                .diaryContent(request.content())
+                .build();
     }
 
     private void saveWords(UsersEntity usersEntity, DiariesEntity diariesEntity, DiaryWordType diaryWordType, List<OpenAiWord> words){

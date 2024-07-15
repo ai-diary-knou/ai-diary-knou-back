@@ -43,8 +43,7 @@ public class DiaryController {
     public ResponseResult saveDiary(@AuthenticationPrincipal UsersEntity usersEntity, @RequestBody DiaryCreateRequest request){
 
         try {
-            diaryService.saveDiaryAfterOpenAiAnalysis(usersEntity, request);
-            return ResponseResult.success();
+            return ResponseResult.success(diaryService.saveDiaryAfterOpenAiAnalysis(usersEntity, request));
         } catch (Exception e) {
             log.info("Error :: ", e);
             throw new UserException(ErrorCode.UNKNOWN_ERROR);

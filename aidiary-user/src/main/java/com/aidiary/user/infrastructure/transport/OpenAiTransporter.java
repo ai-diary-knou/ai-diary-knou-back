@@ -41,18 +41,16 @@ public class OpenAiTransporter {
         String authorization = "Bearer " + openAiKey;
 
         String command = String.format(
-                "%s %s %s %s %s %s %s %s %s %s %s",
-                "In the JSON response, properties and summaries for the diary are written in Korean.",
-                "For writing, use milk font. Properties include emotions, self_thoughts, core_values,",
-                "recommended_actions, and additionals. The summaries include literary_summary.",
-                "For emotions, self_thoughts, and core_values, sentences representing emotional states, self-understanding,",
-                "and core values that can be found in the diary are sequentially delivered as one-line content,",
-                "and a list of words as words. All words have text and scale information.",
-                "Word information is contained in the text, and numbers from 0 to 10 indicating the degree of positivity and negativity are contained in the scale.",
-                "recommended_actions consists of a list of actions that can be recommended through the diary.",
-                "Additionals consists of a list of additional psychological analysis contents that can be analyzed for the diary.",
-                "literary_summary contains one-line sentences from famous books or created literary one-line sentences",
-                "that can express the diary situation based on properties information."
+                "%s%s%s%s%s%s%s%s%s",
+                "JSON 응답으로 diary에 대한 properties, summaries를 한국어로 작성하여 보낸다. 줄글은 우유체 사용. " ,
+                "properties에는 emotions, self_thoghts, core_values, recommended_actions, additionals 포함. " ,
+                "summaries에는 literary_summary을 포함. emotions, self_thoughts, core_values에는 순서대로 diary에서 볼 수 있는 " ,
+                "감정상태, 자기이해, 핵심가치를 나타내는 문장을 content에, 단어 목록을 words에 담아 전달한다. " ,
+                "모든 words에는 text와 scale 정보가 있으며, 단어 정보를 text에, 긍정 및 부정 정도를 나타내는 0-10 수치를 scale에 담는다. ",
+                "recommended_actions에는 diary를 통해 추천할 수 있는 행동들을 리스트로 구성. " ,
+                "additionals에는 diary에 대해 분석할 수 있는 추가적인 심리학적 분석 내용을 리스트로 구성. " ,
+                "literary_summary에는 properties의 정보를 토대로 diary의 상황을 표현할 수 있는 유명한 책의 한 줄 문장 내지는 " ,
+                "만들어낸 문학적인 한 줄 문장을 담음."
         );
 
         OpenAiAnalysisRes res = openAiClient.postToChatCompletions(authorization, OpenAiAnalysisReq.builder()

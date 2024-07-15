@@ -29,9 +29,10 @@ public class OpenAiResponseBundle {
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record OpenAiUsage(Long promptToken, Long completionTokens, Long totalTokens){}
 
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public record OpenAiContent(
             OpenAiProperties properties,
-            String literarySummary
+            OpenAiSummaries summaries
     ){}
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -61,6 +62,11 @@ public class OpenAiResponseBundle {
     public record OpenAiWord(
             String text,
             int scale
+    ) {}
+
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    public record OpenAiSummaries(
+            String literarySummary
     ) {}
 
 }
