@@ -13,5 +13,5 @@ eureka:
     register-with-eureka: false  # 레지스트리에 자신을 등록할 것인가 (default : true)
     fetch-registry: false        # 레지스트리에 있는 정보를 가져올 것인가
     service-url: #server의 위치 지정
-      defaultZone: http://127.0.0.1:8761/eureka
+      defaultZone: http://3.34.227.253:8761/eureka
 
