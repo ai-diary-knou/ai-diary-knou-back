@@ -80,6 +80,7 @@ public class JwtTokenProvider {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setMaxAge((int)(tokenExpirationMilliSeconds / 1000));
+        cookie.setPath("/");
         response.addCookie(cookie);
 
     }
