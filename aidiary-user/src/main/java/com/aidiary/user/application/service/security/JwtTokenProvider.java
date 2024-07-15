@@ -99,4 +99,13 @@ public class JwtTokenProvider {
                 .findFirst().orElse(null);
     }
 
+    // 쿠키에서 토큰 삭제
+    public void revokeJwtTokenFromCookie(HttpServletResponse response){
+        Cookie cookie = new Cookie("Authentication", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
 }

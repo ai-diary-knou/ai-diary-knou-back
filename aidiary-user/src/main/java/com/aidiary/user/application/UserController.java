@@ -5,11 +5,16 @@ import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
 import com.aidiary.user.application.service.UserService;
+import com.aidiary.user.application.service.security.JwtTokenProvider;
+import com.aidiary.user.domain.entity.UsersEntity;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
@@ -78,6 +83,31 @@ public class UserController {
         } catch (Exception e) {
             log.info("Login Failed :", e);
             throw new UserException("Login Failed by unknown reason.", ErrorCode.USER_LOGIN_FAIL);
+        }
+
+    }
+
+    @GetMapping("/me")
+    public ResponseResult getTokenUserClaims(@AuthenticationPrincipal UsersEntity usersEntity){
+
+        try {
+            return ResponseResult.success(userService.getUserClaimsByUsersEntity(usersEntity));
+        } catch (Exception e) {
+            log.info("Token User Claims Not Found :: ", e);
+            throw new UserException(ErrorCode.USER_TOKEN_ERROR);
+        }
+
+    }
+
+    @PostMapping("/logout")
+    public ResponseResult logout(HttpServletResponse response){
+
+        try {
+            userService.logout(response);
+            return ResponseResult.success();
+        } catch (Exception e) {
+            log.info("Log out Fail :: ", e);
+            throw new UserException(ErrorCode.USER_LOGOUT_FAIL);
         }
 
     }

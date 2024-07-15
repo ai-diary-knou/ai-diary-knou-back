@@ -14,6 +14,7 @@ import com.aidiary.user.domain.repository.JpaUserEmailAuthsRepository;
 import com.aidiary.user.domain.repository.JpaUsersRepository;
 import com.aidiary.user.infrastructure.transport.GoogleMailSender;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -169,18 +170,6 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public UserClaims getUserClaims(String email){
-
-        UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
-
-        return UserClaims.builder()
-                .userId(usersEntity.getId())
-                .email(usersEntity.getEmail())
-                .nickname(usersEntity.getNickname())
-                .build();
-    }
-
     public void login(UserLoginRequest request, HttpServletResponse response) throws NoSuchAlgorithmException {
 
         UsersEntity usersEntity = jpaUsersRepository.findByEmail(request.email())
@@ -213,6 +202,19 @@ public class UserService implements UserDetailsService {
         jwtTokenProvider.setCookieByJwtToken(response, token);
         usersEntity.updateLoginAttemptCnt(0);
         jpaUsersRepository.save(usersEntity);
+    }
+
+    public UserClaims getUserClaimsByUsersEntity(UsersEntity usersEntity){
+
+        return UserClaims.builder()
+                .userId(usersEntity.getId())
+                .email(usersEntity.getEmail())
+                .nickname(usersEntity.getNickname())
+                .build();
+    }
+
+    public void logout(HttpServletResponse response) {
+        jwtTokenProvider.revokeJwtTokenFromCookie(response);
     }
 
     private static String getLoginFailMessage(Integer loginAttemptCnt) {
@@ -248,4 +250,6 @@ public class UserService implements UserDetailsService {
         }
 
     }
+
+
 }
