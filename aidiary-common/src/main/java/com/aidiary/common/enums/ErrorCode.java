@@ -32,7 +32,8 @@ public enum ErrorCode {
     DIARY_OWNER_MISMATCH(600, "Cannot access to diary."),
     DIARY_ALREADY_EXIST(600, "Diary already exists. Please update existing diary instead of registering."),
     DIARY_REGISTER_FAIL(600, "Diary register failed."),
-    DIARY_UPDATE_FAIL(600, "Diary update failed") ;
+    DIARY_UPDATE_FAIL(600, "Diary update failed"),
+    DIARY_PARSING_ERROR(600, "Diary parsing error. please contact backend developer.");
 
     private final Integer code;
     private final String message;

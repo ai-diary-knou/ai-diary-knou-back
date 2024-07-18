@@ -47,9 +47,11 @@ public class DiaryController {
 
             return ResponseResult.success(diaryService.saveDiaryAfterOpenAiAnalysis(usersEntity, request));
 
-        }  catch (Exception e) {
+        } catch (DiaryException e) {
+            throw e;
+        } catch (Exception e) {
             log.info("Error :: ", e);
-            throw new UserException(ErrorCode.DIARY_REGISTER_FAIL);
+            throw new DiaryException(ErrorCode.DIARY_REGISTER_FAIL);
         }
 
     }
@@ -61,9 +63,11 @@ public class DiaryController {
 
             return ResponseResult.success(diaryService.updateDiaryAfterOpenAiAnalysis(usersEntity, diaryId, request));
 
+        } catch (DiaryException e) {
+            throw e;
         } catch (Exception e) {
             log.info("Error :: ", e);
-            throw new UserException(ErrorCode.DIARY_UPDATE_FAIL);
+            throw new DiaryException(ErrorCode.DIARY_UPDATE_FAIL);
         }
 
     }
@@ -75,9 +79,9 @@ public class DiaryController {
             return ResponseResult.success(diaryService.getDiaryDetail(usersEntity.getId(), diaryId));
         } catch (DiaryException e) {
             throw e;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             log.info("Error ::", e);
-            throw new UserException(ErrorCode.UNKNOWN_ERROR);
+            throw new DiaryException(ErrorCode.UNKNOWN_ERROR);
         }
 
     }

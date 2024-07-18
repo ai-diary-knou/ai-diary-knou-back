@@ -2,6 +2,7 @@ package com.aidiary.user.presentation.exception;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.enums.ErrorStatus;
+import com.aidiary.common.exception.DiaryException;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserException.class)
     public ErrorResponse handleUserException(UserException e){
+        return ErrorResponse.builder()
+                .status(ErrorStatus.FAIL)
+                .code(e.getErrorCode().name())
+                .message(e.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(DiaryException.class)
+    public ErrorResponse handleDiaryException(DiaryException e){
         return ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
                 .code(e.getErrorCode().name())
