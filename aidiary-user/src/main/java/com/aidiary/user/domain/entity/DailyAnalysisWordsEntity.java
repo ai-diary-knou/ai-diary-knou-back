@@ -7,7 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "daily_analysis_words")
+@Entity
+@Table(name = "daily_analysis_words")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

@@ -19,9 +19,10 @@ import com.aidiary.user.domain.repository.JpaDiariesRepository;
 import com.aidiary.user.infrastructure.encryptor.HybridDiaryEncryptor;
 import com.aidiary.user.infrastructure.transport.OpenAiTransporter;
 import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.aidiary.common.enums.DiaryStatus.ACTIVE;
 import static com.aidiary.common.enums.DiaryStatus.INACTIVE;
@@ -45,27 +47,38 @@ public class DiaryService {
     private final JpaDailyAnalysisSentencesRepository jpaDailyAnalysisSentencesRepository;
     private final HybridDiaryEncryptor hybridDiaryEncryptor;
 
-    public MainReportResponse getMainReportsOfDiaries() {
+    public MainReportResponse getMainReportsOfDiaries(UsersEntity usersEntity) {
 
-        List<String> recentSevenLiterarySummaries = new ArrayList<>();
-        List<BigDecimal> recentSevenAverageEmotionScales = new ArrayList<>();
-        List<String> recentTenRepetitiveKeywords = new ArrayList<>();
-        List<String> recentRecommendedActions = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        List<String> recentSevenLiterarySummaries = jpaDailyAnalysisSentencesRepository.findSentenceByUserAndTypeAndPage(
+                usersEntity, DiarySentenceType.LITERARY_SUMMARY, PageRequest.of(0, 7, Sort.by("s.id"))
+        );
+
+        List<BigDecimal> recentSevenAverageEmotionScales = jpaDailyAnalysisWordsRepository.findAverageEmotionScalesByUserAndBetween(
+                usersEntity, today.minusDays(7), today
+        );
+
+        List<String> recentTenRepetitiveKeywords = jpaDailyAnalysisWordsRepository.findTenRecentRepetitiveKeywordsByUserAndBetween(
+                usersEntity, today.minusDays(30), today
+        );
+
+        List<String> recentRecommendedActions = jpaDailyAnalysisSentencesRepository.findRecentRecommendedActions(usersEntity);
 
         return MainReportResponse.builder()
-                .recentSevenLiterarySummaries(recentSevenLiterarySummaries)
-                .recentSevenAverageEmotionScales(recentSevenAverageEmotionScales)
-                .recentTenRepetitiveKeywords(recentTenRepetitiveKeywords)
+                .recentLiterarySummaries(recentSevenLiterarySummaries)
+                .recentAverageEmotionScales(recentSevenAverageEmotionScales)
+                .recentRepetitiveKeywords(recentTenRepetitiveKeywords)
                 .recentRecommendedActions(recentRecommendedActions)
                 .build();
     }
 
 
-    public MonthlyReportResponse getMonthlyReportsOfDiaries(DiariesOfMonthGetRequest request) {
+    public MonthlyReportResponse getMonthlyReportsOfDiaries(UsersEntity usersEntity, DiariesOfMonthGetRequest request) {
 
-        LocalDate selectedDate = null;
-        List<String> recentSevenLiterarySummaries = new ArrayList<>();
-        List<DiaryOutline> monthlyDiaryReports = new ArrayList<>();
+        LocalDate selectedDate = request.getSelectedDate();
+        List<DiaryOutline> monthlyDiaryReports = jpaDailyAnalysisSentencesRepository.findByUserAndMonth(usersEntity, selectedDate.getMonthValue())
+                .stream().map(DiaryOutline::of).collect(Collectors.toList());
 
         return MonthlyReportResponse.builder()
                 .selectedDate(selectedDate)

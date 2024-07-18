@@ -1,9 +1,6 @@
 package com.aidiary.user.domain.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Entity(name = "user_email_auths")
+@Entity
+@Table(name = "user_email_auths")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

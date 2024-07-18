@@ -6,9 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
-@Entity(name = "diaries")
+@Entity
+@Table(name = "diaries")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -29,4 +31,5 @@ public class DiariesEntity extends BaseEntity{
     public void updateStatus(DiaryStatus status) {
         this.status = status;
     }
+
 }

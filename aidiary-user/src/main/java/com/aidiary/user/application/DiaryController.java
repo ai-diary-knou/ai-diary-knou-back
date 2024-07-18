@@ -25,17 +25,17 @@ public class DiaryController {
     private final DiaryService diaryService;
 
     @GetMapping("/main-reports")
-    public ResponseResult getMainReportsOfDiaries(){
+    public ResponseResult getMainReportsOfDiaries(@AuthenticationPrincipal UsersEntity usersEntity){
 
-        MainReportResponse mainReportResponse = diaryService.getMainReportsOfDiaries();
+        MainReportResponse mainReportResponse = diaryService.getMainReportsOfDiaries(usersEntity);
 
         return ResponseResult.success(mainReportResponse);
     }
 
     @GetMapping("/monthly-reports")
-    public ResponseResult getMonthlyReportsOfDiaries(DiariesOfMonthGetRequest request){
+    public ResponseResult getMonthlyReportsOfDiaries(@AuthenticationPrincipal UsersEntity usersEntity, DiariesOfMonthGetRequest request){
 
-        MonthlyReportResponse monthlyReportResponse = diaryService.getMonthlyReportsOfDiaries(request);
+        MonthlyReportResponse monthlyReportResponse = diaryService.getMonthlyReportsOfDiaries(usersEntity, request);
 
         return ResponseResult.success(monthlyReportResponse);
     }

@@ -13,7 +13,8 @@ import java.util.Collection;
 
 import static com.aidiary.common.enums.UserStatus.*;
 
-@Entity(name = "users")
+@Entity
+@Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter

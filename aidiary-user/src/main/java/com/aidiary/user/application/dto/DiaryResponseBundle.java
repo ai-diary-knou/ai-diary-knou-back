@@ -1,26 +1,22 @@
 package com.aidiary.user.application.dto;
 
+import com.aidiary.user.domain.entity.DailyAnalysisSentencesEntity;
 import com.aidiary.user.domain.entity.DailyAnalysisWordsEntity;
-import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.OpenAiCoreValues;
-import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.OpenAiEmotions;
-import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.OpenAiSelfThoughts;
-import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.OpenAiWord;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public abstract class DiaryResponseBundle {
 
     @Builder
     public record MainReportResponse(
-         List<String> recentSevenLiterarySummaries,
-         List<BigDecimal> recentSevenAverageEmotionScales,
-         List<String> recentTenRepetitiveKeywords, // within 30 days
-         List<String> recentRecommendedActions
+            List<String> recentLiterarySummaries,
+            List<BigDecimal> recentAverageEmotionScales,
+            List<String> recentRepetitiveKeywords, // within 30 days
+            List<String> recentRecommendedActions
     ){}
 
     @Builder
@@ -31,10 +27,19 @@ public abstract class DiaryResponseBundle {
 
     @Builder
     public record DiaryOutline(
+         Long diaryId,
          @JsonFormat(pattern = "yyyy-MM-dd")
          LocalDate entryDate,
          String literarySummary
-    ){}
+    ){
+        public static DiaryOutline of(DailyAnalysisSentencesEntity dailyAnalysisSentencesEntity) {
+            return DiaryOutline.builder()
+                    .diaryId(dailyAnalysisSentencesEntity.getDiary().getId())
+                    .entryDate(dailyAnalysisSentencesEntity.getDiary().getEntryDate())
+                    .literarySummary(dailyAnalysisSentencesEntity.getContent())
+                    .build();
+        }
+    }
 
     @Builder
     public record DiarySaveRes(
