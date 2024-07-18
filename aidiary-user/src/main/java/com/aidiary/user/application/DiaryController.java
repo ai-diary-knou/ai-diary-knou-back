@@ -1,6 +1,7 @@
 package com.aidiary.user.application;
 
 import com.aidiary.common.enums.ErrorCode;
+import com.aidiary.common.exception.DiaryException;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.application.dto.DiaryRequestBundle.*;
@@ -43,25 +44,42 @@ public class DiaryController {
     public ResponseResult saveDiary(@AuthenticationPrincipal UsersEntity usersEntity, @RequestBody DiaryCreateRequest request){
 
         try {
+
             return ResponseResult.success(diaryService.saveDiaryAfterOpenAiAnalysis(usersEntity, request));
-        } catch (Exception e) {
+
+        }  catch (Exception e) {
             log.info("Error :: ", e);
-            throw new UserException(ErrorCode.UNKNOWN_ERROR);
+            throw new UserException(ErrorCode.DIARY_REGISTER_FAIL);
         }
 
     }
 
     @PutMapping("/{diaryId}")
-    public ResponseResult updateDiary(@AuthenticationPrincipal UserDetails userDetails, @PathVariable Long diaryId, @RequestBody DiaryUpdateRequest request){
+    public ResponseResult updateDiary(@AuthenticationPrincipal UsersEntity usersEntity, @PathVariable Long diaryId, @RequestBody DiaryUpdateRequest request){
 
+        try {
 
-        return ResponseResult.success();
+            return ResponseResult.success(diaryService.updateDiaryAfterOpenAiAnalysis(usersEntity, diaryId, request));
+
+        } catch (Exception e) {
+            log.info("Error :: ", e);
+            throw new UserException(ErrorCode.DIARY_UPDATE_FAIL);
+        }
+
     }
 
     @GetMapping("/{diaryId}")
-    public ResponseResult getDiaryDetail(@PathVariable Long diaryId){
+    public ResponseResult getDiaryDetail(@AuthenticationPrincipal UsersEntity usersEntity, @PathVariable Long diaryId){
 
-        return ResponseResult.success();
+        try {
+            return ResponseResult.success(diaryService.getDiaryDetail(usersEntity.getId(), diaryId));
+        } catch (DiaryException e) {
+            throw e;
+        }  catch (Exception e) {
+            log.info("Error ::", e);
+            throw new UserException(ErrorCode.UNKNOWN_ERROR);
+        }
+
     }
 
 }

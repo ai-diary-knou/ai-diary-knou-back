@@ -4,11 +4,13 @@ import com.aidiary.common.enums.DiarySentenceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity(name = "daily_analysis_sentences")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Builder
 public class DailyAnalysisSentencesEntity extends BaseEntity{
 

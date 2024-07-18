@@ -25,7 +25,14 @@ public enum ErrorCode {
     USER_ALREADY_SIGNED_OUT(401, "User already signed out before. Please try another account."),
     USER_TOKEN_ERROR(500, "Cannot extract token info. Are you logged in?"),
     USER_LOGOUT_FAIL(500, "User log out error occurred. Are you logged in? Please Check before logout."),
-    USER_AUTH_FAIL(403, "User Authentication Failed. Jwt Token Expired or Invalid.");
+    USER_AUTH_FAIL(403, "User Authentication Failed. Jwt Token Expired or Invalid."),
+
+    // 일기 관련
+    DIARY_NOT_FOUND(600, "Cannot find diary info."),
+    DIARY_OWNER_MISMATCH(600, "Cannot access to diary."),
+    DIARY_ALREADY_EXIST(600, "Diary already exists. Please update existing diary instead of registering."),
+    DIARY_REGISTER_FAIL(600, "Diary register failed."),
+    DIARY_UPDATE_FAIL(600, "Diary update failed") ;
 
     private final Integer code;
     private final String message;

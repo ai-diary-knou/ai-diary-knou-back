@@ -21,8 +21,6 @@ public abstract class DiaryRequestBundle {
     ){}
 
     public record DiaryUpdateRequest(
-            @JsonFormat(pattern = "yyyy-MM-dd")
-            LocalDate entryDate,
             String content
     ){}
 
