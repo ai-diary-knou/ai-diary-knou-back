@@ -3,6 +3,7 @@ package com.aidiary.user.application.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public abstract class DiaryRequestBundle {
 
@@ -12,6 +13,16 @@ public abstract class DiaryRequestBundle {
           Integer date
     ){
 
+        public DiariesOfMonthGetRequest {
+            LocalDate currentDate = LocalDate.now();
+            year = Objects.nonNull(year) ? year : currentDate.getYear();
+            month = Objects.nonNull(month) ? month : currentDate.getMonthValue();
+            date = Objects.nonNull(date) ? date : currentDate.getDayOfMonth();
+        }
+
+        public LocalDate getSelectedDate(){
+            return LocalDate.of(year, month, date);
+        }
     }
 
     public record DiaryCreateRequest(
@@ -21,8 +32,6 @@ public abstract class DiaryRequestBundle {
     ){}
 
     public record DiaryUpdateRequest(
-            @JsonFormat(pattern = "yyyy-MM-dd")
-            LocalDate entryDate,
             String content
     ){}
 

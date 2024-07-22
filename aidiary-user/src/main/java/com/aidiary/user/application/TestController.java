@@ -1,4 +1,4 @@
-package com.aidiary.user.presentation.controller;
+package com.aidiary.user.application;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
