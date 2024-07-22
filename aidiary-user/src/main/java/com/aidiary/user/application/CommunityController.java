@@ -1,4 +1,4 @@
-package com.aidiary.user.presentation.controller;
+package com.aidiary.user.application;
 
 import org.springframework.web.bind.annotation.RestController;
 
