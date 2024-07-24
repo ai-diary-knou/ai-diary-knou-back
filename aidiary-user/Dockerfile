@@ -9,4 +9,4 @@ ENV MAIL_PASSWORD=${MAIL_PASSWORD}
 ENV JWT_KEY=${JWT_KEY}
 ENV OPEN_AI_KEY=${OPEN_AI_KEY}
 ENV SEED_KEY=${SEED_KEY}
-ENTRYPOINT ["nohup", "java", "-jar", "aidiary-user.jar", "&"]
+ENTRYPOINT ["nohup", "java", "-jar",  "-Dspring.profiles.active=dev", "aidiary-user.jar", "&"]
