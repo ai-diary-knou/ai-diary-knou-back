@@ -23,7 +23,9 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins: 'http://localhost:3000', 'https://ai-diary-knou-front.vercel.app'
+            allowedOrigins:
+              - 'http://localhost:3000'
+              - 'https://ai-diary-knou-front.vercel.app'
             allow-credentials: true
             allowedHeaders: '*'
             allowedMethods:
