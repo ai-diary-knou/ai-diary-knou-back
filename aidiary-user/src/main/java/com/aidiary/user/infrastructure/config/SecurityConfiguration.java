@@ -38,14 +38,15 @@ public class SecurityConfiguration{
             "/api/v1/users/email/auth-code",
             "/api/v1/users/email/auth",
             "/api/v1/users/login",
-            "/api/v1/users/password"
+            "/api/v1/users/password",
+            "/api/v1/users/me"
     };
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://ai-diary-knou-front.vercel.app"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://121.140.56.154:5173", "http://220.70.17.64:5173", "https://ai-diary-knou-front.vercel.app"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -58,6 +59,7 @@ public class SecurityConfiguration{
 
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(request -> StringUtils.hasText(request.getHeader("ai_diary_tmp_user_id")))
                     .permitAll()
