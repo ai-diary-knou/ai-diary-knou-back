@@ -28,6 +28,7 @@ spring:
             allowedHeaders: '*'
             allowedMethods:
               - PUT
+              - PATCH
               - GET
               - POST
               - DELETE
