@@ -1,4 +1,5 @@
 dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     implementation project(':aidiary-common')
+    implementation 'com.github.ben-manes.caffeine:caffeine'
 }

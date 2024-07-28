@@ -6,7 +6,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      default-zone: http://127.0.0.1:5000/eureka
+      default-zone: http://127.0.0.1:8761/eureka
 
 spring:
   application:
@@ -14,11 +14,27 @@ spring:
   cloud:
     gateway:
       default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
         - name: GlobalFilter
           args:
             baseMessage: Spring Cloud Gateway Global Filter
             preLogger: true
             postLogger: true
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - 'http://localhost:3000'
+              - 'https://ai-diary-knou-front.vercel.app'
+            allow-credentials: true
+            allowedHeaders: '*'
+            allowedMethods:
+              - PUT
+              - PATCH
+              - GET
+              - POST
+              - DELETE
+              - OPTIONS
       routes:
         - id: user-service
           uri: lb://USER-SERVICE
