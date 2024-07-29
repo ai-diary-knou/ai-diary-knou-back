@@ -42,9 +42,9 @@ spring:
             - Path=/api/v1/**
           filters:
             - name: UserLoggingFilter
-        - id: admin-service
-          uri: lb://ADMIN-SERVICE
-          predicates:
-            - Path=/admin/**
-          filters:
-            - name: AdminLoggingFilter
+#        - id: admin-service
+#          uri: lb://ADMIN-SERVICE
+#          predicates:
+#            - Path=/admin/**
+#          filters:
+#            - name: AdminLoggingFilter
