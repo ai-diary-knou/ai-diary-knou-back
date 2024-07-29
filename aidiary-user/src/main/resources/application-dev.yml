@@ -1,6 +1,9 @@
 server:
   port: 0
 
+client:
+  domain: https://ai-diary-knou-front.vercel.app
+
 spring:
   application:
     name: user-service
