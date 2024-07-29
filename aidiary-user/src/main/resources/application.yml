@@ -1,6 +1,9 @@
 server:
   port: 0
 
+client:
+  domain: http://localhost:5173
+
 spring:
   application:
     name: user-service

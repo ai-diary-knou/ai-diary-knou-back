@@ -28,6 +28,9 @@ public class JwtTokenProvider {
     @Value("${spring.jwt.expire-time}")
     private long tokenExpirationMilliSeconds;
 
+    @Value("${client.domain}")
+    private String clientDomain;
+
     @Builder
     @Getter
     public static class UserClaims{
@@ -77,6 +80,7 @@ public class JwtTokenProvider {
     public void setCookieByJwtToken(HttpServletResponse response, String token){
 
         Cookie cookie = new Cookie("Authentication", token);
+        cookie.setDomain(clientDomain);
         cookie.setHttpOnly(true);
         cookie.setSecure(false); // todo 차후 true로 변경 필요
         cookie.setMaxAge((int)(tokenExpirationMilliSeconds / 1000));
