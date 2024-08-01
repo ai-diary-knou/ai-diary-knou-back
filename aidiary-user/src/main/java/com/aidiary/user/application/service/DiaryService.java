@@ -16,7 +16,7 @@ import com.aidiary.user.domain.entity.UsersEntity;
 import com.aidiary.user.domain.repository.JpaDailyAnalysisSentencesRepository;
 import com.aidiary.user.domain.repository.JpaDailyAnalysisWordsRepository;
 import com.aidiary.user.domain.repository.JpaDiariesRepository;
-import com.aidiary.user.infrastructure.encryptor.HybridDiaryEncryptor;
+import com.aidiary.user.infrastructure.encryptor.HybridEncryptor;
 import com.aidiary.user.infrastructure.transport.OpenAiTransporter;
 import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.*;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class DiaryService {
     private final JpaDiariesRepository jpaDiariesRepository;
     private final JpaDailyAnalysisWordsRepository jpaDailyAnalysisWordsRepository;
     private final JpaDailyAnalysisSentencesRepository jpaDailyAnalysisSentencesRepository;
-    private final HybridDiaryEncryptor hybridDiaryEncryptor;
+    private final HybridEncryptor hybridEncryptor;
 
     public MainReportResponse getMainReportsOfDiaries(UsersEntity usersEntity) {
 
@@ -101,7 +101,7 @@ public class DiaryService {
         DiariesEntity diariesEntity = jpaDiariesRepository.save(
                 DiariesEntity.builder()
                         .user(usersEntity)
-                        .content(hybridDiaryEncryptor.encrypt(request.content()))
+                        .content(hybridEncryptor.encrypt(request.content()))
                         .entryDate(request.entryDate())
                         .status(ACTIVE)
                         .build()
@@ -144,7 +144,7 @@ public class DiaryService {
         DiariesEntity diariesEntity = jpaDiariesRepository.save(
                 DiariesEntity.builder()
                         .user(usersEntity)
-                        .content(hybridDiaryEncryptor.encrypt(request.content()))
+                        .content(hybridEncryptor.encrypt(request.content()))
                         .entryDate(originalDiary.getEntryDate())
                         .status(ACTIVE)
                         .build()
@@ -242,7 +242,7 @@ public class DiaryService {
             throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
         }
 
-        String diaryContent = hybridDiaryEncryptor.decrypt(diariesEntity.getContent());
+        String diaryContent = hybridEncryptor.decrypt(diariesEntity.getContent());
 
         Map<DiaryWordType, List<DiaryWord>> wordsByType = diaryWordsByType(jpaDailyAnalysisWordsRepository.findByDiary(diariesEntity));
         Map<DiarySentenceType, List<String>> sentencesByType = diarySentencesByType(jpaDailyAnalysisSentencesRepository.findByDiary(diariesEntity));

@@ -12,7 +12,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 @Component
-public class HybridDiaryEncryptor {
+public class HybridEncryptor {
 
     @Value("${spring.encryptor.seed-key}")
     private String encryptSeedKey;

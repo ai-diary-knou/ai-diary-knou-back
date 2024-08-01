@@ -3,14 +3,15 @@ package com.aidiary.user.presentation.filter;
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.enums.ErrorStatus;
 import com.aidiary.common.vo.ResponseBundle;
+import com.aidiary.user.application.dto.UserClaims;
 import com.aidiary.user.application.service.security.JwtTokenProvider;
-import com.aidiary.user.application.service.security.JwtTokenProvider.UserClaims;
 import com.aidiary.user.domain.entity.UsersEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,12 +22,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
 @Component
+@Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
@@ -49,7 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String token = jwtTokenProvider.getJwtTokenFromCookie(request);
+            String token = jwtTokenProvider.getJwtTokenFromHeader(request);
+            log.info("Authorization Header : {}", token);
             UserClaims userClaims = StringUtils.hasText(token) ? jwtTokenProvider.extractClaimsFromToken(token) : null;
 
             if (Objects.isNull(userClaims) || !jwtTokenProvider.isValidToken(token)) {
@@ -76,6 +78,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (AuthenticationException e) {
 
+            log.error("AuthenticationException :: ", e);
             ResponseBundle.ErrorResponse errorResponse = ResponseBundle.ErrorResponse.builder()
                     .status(ErrorStatus.FAIL)
                     .code(ErrorCode.USER_TOKEN_ERROR.name())
@@ -87,6 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
 
+            log.error("Authorization Error :: ", e);
             ResponseBundle.ErrorResponse errorResponse = ResponseBundle.ErrorResponse.builder()
                     .status(ErrorStatus.FAIL)
                     .code(ErrorCode.USER_AUTH_FAIL.name())
