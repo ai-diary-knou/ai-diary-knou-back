@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 8080
 
 client:
   domain: http://localhost:5173
@@ -48,6 +48,8 @@ logging:
 
 eureka:
   instance:
+    lease-renewal-interval-in-seconds: 10  # 기본값은 30초
+    lease-expiration-duration-in-seconds: 30  # 기본값은 90초
     instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
   client:
     register-with-eureka: true
