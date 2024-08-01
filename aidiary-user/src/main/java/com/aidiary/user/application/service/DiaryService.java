@@ -56,7 +56,7 @@ public class DiaryService {
         );
 
         List<BigDecimal> recentSevenAverageEmotionScales = jpaDailyAnalysisWordsRepository.findAverageEmotionScalesByUserAndBetween(
-                usersEntity, today.minusDays(7), today
+                usersEntity, PageRequest.of(0, 7, Sort.by("d.id"))
         );
 
         List<String> recentTenRepetitiveKeywords = jpaDailyAnalysisWordsRepository.findTenRecentRepetitiveKeywordsByUserAndBetween(
