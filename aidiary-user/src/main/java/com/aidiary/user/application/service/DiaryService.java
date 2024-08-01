@@ -1,7 +1,7 @@
 package com.aidiary.user.application.service;
 
-import com.aidiary.common.enums.DiaryStatus;
 import com.aidiary.common.enums.DiarySentenceType;
+import com.aidiary.common.enums.DiaryStatus;
 import com.aidiary.common.enums.DiaryWordType;
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.DiaryException;
@@ -300,4 +300,8 @@ public class DiaryService {
         return sentencesByType;
     }
 
+    public Long getUserDiaryCount(UsersEntity usersEntity) {
+
+        return jpaDiariesRepository.countAllByUserAndStatus(usersEntity, ACTIVE);
+    }
 }
