@@ -35,7 +35,7 @@ spring:
     open-in-view: false
   jwt:
     secret-key: ${JWT_KEY}
-    expire-time: 180000 # 3 x 60 x 1000
+    expire-time: 10800000 # 3 x 60 x 60 x 1000
   encryptor:
     seed-key: ${SEED_KEY}
 openapi:
