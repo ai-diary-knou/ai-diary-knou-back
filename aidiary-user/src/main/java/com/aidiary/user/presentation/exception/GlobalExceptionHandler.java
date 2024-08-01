@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserException.class)
     public ResponseEntity<ErrorResponse> handleUserException(UserException e) {
+        log.info("UserException Error ::", e);
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
                 .code(e.getErrorCode().name())
@@ -48,6 +49,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DiaryException.class)
     public ResponseEntity<ErrorResponse> handleDiaryException(DiaryException e) {
+        log.info("DiaryException Error ::", e);
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
                 .code(e.getErrorCode().name())
@@ -59,6 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+        log.info("MethodArgumentNotValidException Error ::", e);
         String errorMessage = e.getBindingResult().getFieldErrors().stream()
                 .map(error -> Objects.requireNonNull(error.getDefaultMessage()))
                 .findFirst().orElse("Invalid Parameter. Needs to check logs");
@@ -74,6 +77,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+        log.info("MethodArgumentTypeMismatchException Error ::", e);
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
                 .code(ErrorCode.INVALID_PARAMETER.name())
@@ -85,6 +89,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BindException.class)
     public ResponseEntity<ErrorResponse> handleBindException(BindException e) {
+        log.info("BindException Error ::", e);
         String errorMessage = Objects.requireNonNull(e.getFieldError()).getDefaultMessage();
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
@@ -97,6 +102,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+        log.info("ConstraintViolationException Error ::", e);
         String errorMessage = e.getMessage();
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
