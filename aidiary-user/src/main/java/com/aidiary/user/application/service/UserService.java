@@ -196,7 +196,6 @@ public class UserService implements UserDetailsService {
                 .build();
 
         String token = jwtTokenProvider.createToken(userClaims);
-        //jwtTokenProvider.setCookieByJwtToken(response, token);
         usersEntity.updateLoginAttemptCnt(0);
         jpaUsersRepository.save(usersEntity);
         return token;
@@ -249,5 +248,15 @@ public class UserService implements UserDetailsService {
 
     }
 
+    @Transactional
+    public void updateNickname(Long userId, UserNicknameUpdateRequest request) {
 
+        UsersEntity usersEntity = jpaUsersRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_EXIST));
+
+        validateNicknameDuplication(request.nickname());
+
+        usersEntity.updateNickname(request.nickname());
+
+    }
 }

@@ -136,4 +136,13 @@ public class UserController {
 
     }
 
+    @PutMapping("/nickname")
+    public ResponseResult updateNickname(@AuthenticationPrincipal UsersEntity usersEntity,
+                                         @Valid @RequestBody UserNicknameUpdateRequest request){
+
+        userService.updateNickname(usersEntity.getId(), request);
+
+        return ResponseResult.success();
+    }
+
 }
