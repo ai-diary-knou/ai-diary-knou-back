@@ -1,7 +1,7 @@
 package com.aidiary.user.application.service;
 
-import com.aidiary.common.enums.DiaryStatus;
 import com.aidiary.common.enums.DiarySentenceType;
+import com.aidiary.common.enums.DiaryStatus;
 import com.aidiary.common.enums.DiaryWordType;
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.DiaryException;
@@ -16,7 +16,7 @@ import com.aidiary.user.domain.entity.UsersEntity;
 import com.aidiary.user.domain.repository.JpaDailyAnalysisSentencesRepository;
 import com.aidiary.user.domain.repository.JpaDailyAnalysisWordsRepository;
 import com.aidiary.user.domain.repository.JpaDiariesRepository;
-import com.aidiary.user.infrastructure.encryptor.HybridDiaryEncryptor;
+import com.aidiary.user.infrastructure.encryptor.HybridEncryptor;
 import com.aidiary.user.infrastructure.transport.OpenAiTransporter;
 import com.aidiary.user.infrastructure.transport.response.OpenAiResponseBundle.*;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class DiaryService {
     private final JpaDiariesRepository jpaDiariesRepository;
     private final JpaDailyAnalysisWordsRepository jpaDailyAnalysisWordsRepository;
     private final JpaDailyAnalysisSentencesRepository jpaDailyAnalysisSentencesRepository;
-    private final HybridDiaryEncryptor hybridDiaryEncryptor;
+    private final HybridEncryptor hybridEncryptor;
 
     public MainReportResponse getMainReportsOfDiaries(UsersEntity usersEntity) {
 
@@ -56,7 +56,7 @@ public class DiaryService {
         );
 
         List<BigDecimal> recentSevenAverageEmotionScales = jpaDailyAnalysisWordsRepository.findAverageEmotionScalesByUserAndBetween(
-                usersEntity, today.minusDays(7), today
+                usersEntity, PageRequest.of(0, 7, Sort.by("d.id"))
         );
 
         List<String> recentTenRepetitiveKeywords = jpaDailyAnalysisWordsRepository.findTenRecentRepetitiveKeywordsByUserAndBetween(
@@ -77,8 +77,9 @@ public class DiaryService {
     public MonthlyReportResponse getMonthlyReportsOfDiaries(UsersEntity usersEntity, DiariesOfMonthGetRequest request) {
 
         LocalDate selectedDate = request.getSelectedDate();
-        List<DiaryOutline> monthlyDiaryReports = jpaDailyAnalysisSentencesRepository.findByUserAndMonth(usersEntity, selectedDate.getMonthValue())
-                .stream().map(DiaryOutline::of).collect(Collectors.toList());
+        List<DiaryOutline> monthlyDiaryReports = jpaDailyAnalysisSentencesRepository.findByUserAndMonthAndStatusAndType(
+                    usersEntity, selectedDate.getMonthValue(), ACTIVE, DiarySentenceType.LITERARY_SUMMARY
+                ).stream().map(DiaryOutline::of).collect(Collectors.toList());
 
         return MonthlyReportResponse.builder()
                 .selectedDate(selectedDate)
@@ -89,7 +90,7 @@ public class DiaryService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public DiarySaveRes saveDiaryAfterOpenAiAnalysis(UsersEntity usersEntity, DiaryCreateRequest request) throws Exception {
 
-        Optional<DiariesEntity> sameEntryDateDiary = jpaDiariesRepository.findByEntryDateAndStatus(request.entryDate(), DiaryStatus.ACTIVE);
+        Optional<DiariesEntity> sameEntryDateDiary = jpaDiariesRepository.findByUserAndEntryDateAndStatus(usersEntity, request.entryDate(), DiaryStatus.ACTIVE);
 
         if (sameEntryDateDiary.isPresent()) {
             throw new DiaryException(ErrorCode.DIARY_ALREADY_EXIST);
@@ -101,7 +102,7 @@ public class DiaryService {
         DiariesEntity diariesEntity = jpaDiariesRepository.save(
                 DiariesEntity.builder()
                         .user(usersEntity)
-                        .content(hybridDiaryEncryptor.encrypt(request.content()))
+                        .content(hybridEncryptor.encrypt(request.content()))
                         .entryDate(request.entryDate())
                         .status(ACTIVE)
                         .build()
@@ -136,6 +137,11 @@ public class DiaryService {
 
         DiariesEntity originalDiary = jpaDiariesRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!Objects.equals(originalDiary.getUser().getId(), usersEntity.getId())) {
+            throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
+        }
+
         originalDiary.updateStatus(INACTIVE);
 
         OpenAiContent openAiContent = openAiTransporter.getAnalysisContentFromTurbo3Point5(request.content());
@@ -144,7 +150,7 @@ public class DiaryService {
         DiariesEntity diariesEntity = jpaDiariesRepository.save(
                 DiariesEntity.builder()
                         .user(usersEntity)
-                        .content(hybridDiaryEncryptor.encrypt(request.content()))
+                        .content(hybridEncryptor.encrypt(request.content()))
                         .entryDate(originalDiary.getEntryDate())
                         .status(ACTIVE)
                         .build()
@@ -242,7 +248,7 @@ public class DiaryService {
             throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
         }
 
-        String diaryContent = hybridDiaryEncryptor.decrypt(diariesEntity.getContent());
+        String diaryContent = hybridEncryptor.decrypt(diariesEntity.getContent());
 
         Map<DiaryWordType, List<DiaryWord>> wordsByType = diaryWordsByType(jpaDailyAnalysisWordsRepository.findByDiary(diariesEntity));
         Map<DiarySentenceType, List<String>> sentencesByType = diarySentencesByType(jpaDailyAnalysisSentencesRepository.findByDiary(diariesEntity));
@@ -300,4 +306,8 @@ public class DiaryService {
         return sentencesByType;
     }
 
+    public Long getUserDiaryCount(UsersEntity usersEntity) {
+
+        return jpaDiariesRepository.countAllByUserAndStatus(usersEntity, ACTIVE);
+    }
 }

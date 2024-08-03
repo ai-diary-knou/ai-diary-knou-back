@@ -86,4 +86,10 @@ public class DiaryController {
 
     }
 
+    @GetMapping("/count")
+    public ResponseResult getUserDiaryCount(@AuthenticationPrincipal UsersEntity usersEntity){
+
+        return ResponseResult.success(diaryService.getUserDiaryCount(usersEntity));
+    }
+
 }

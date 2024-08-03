@@ -5,20 +5,18 @@ import com.aidiary.common.enums.UserStatus;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.common.utils.RandomCodeGenerator;
 import com.aidiary.common.utils.SHA256Util;
+import com.aidiary.user.application.dto.UserClaims;
 import com.aidiary.user.application.dto.UserRequestBundle.*;
 import com.aidiary.user.application.service.security.JwtTokenProvider;
-import com.aidiary.user.application.service.security.JwtTokenProvider.UserClaims;
 import com.aidiary.user.domain.entity.UserEmailAuthsEntity;
 import com.aidiary.user.domain.entity.UsersEntity;
 import com.aidiary.user.domain.repository.JpaUserEmailAuthsRepository;
 import com.aidiary.user.domain.repository.JpaUsersRepository;
 import com.aidiary.user.infrastructure.transport.GoogleMailSender;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -32,7 +30,6 @@ import java.util.Optional;
 
 import static com.aidiary.common.enums.UserStatus.ACTIVE;
 import static com.aidiary.common.enums.UserStatus.BLOCKED;
-import static org.springframework.security.core.userdetails.User.withUsername;
 
 @RequiredArgsConstructor
 @Service
@@ -170,7 +167,7 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public void login(UserLoginRequest request, HttpServletResponse response) throws NoSuchAlgorithmException {
+    public String login(UserLoginRequest request, HttpServletResponse response) throws Exception {
 
         UsersEntity usersEntity = jpaUsersRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.USER_NOT_EXIST.getMessage()));
@@ -199,9 +196,9 @@ public class UserService implements UserDetailsService {
                 .build();
 
         String token = jwtTokenProvider.createToken(userClaims);
-        jwtTokenProvider.setCookieByJwtToken(response, token);
         usersEntity.updateLoginAttemptCnt(0);
         jpaUsersRepository.save(usersEntity);
+        return token;
     }
 
     public UserClaims getUserClaimsByUsersEntity(UsersEntity usersEntity){
@@ -251,5 +248,15 @@ public class UserService implements UserDetailsService {
 
     }
 
+    @Transactional
+    public void updateNickname(Long userId, UserNicknameUpdateRequest request) {
 
+        UsersEntity usersEntity = jpaUsersRepository.findById(userId)
+                .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_EXIST));
+
+        validateNicknameDuplication(request.nickname());
+
+        usersEntity.updateNickname(request.nickname());
+
+    }
 }

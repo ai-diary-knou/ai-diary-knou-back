@@ -30,6 +30,7 @@ public class UserController {
     @GetMapping("/duplicate")
     public ResponseResult validateDuplicateEmail(UserValidateDuplicateRequest request){
 
+        log.info("request : {}", request);
         userService.validateUserDuplication(request);
 
         return ResponseResult.success();
@@ -38,6 +39,7 @@ public class UserController {
     @PostMapping("/email/auth-code")
     public ResponseResult sendAuthCodeToEmail(@Valid @RequestBody UserEmailAuthCodeSentRequest request) throws MessagingException {
 
+        log.info("request : {}", request);
         userService.createRandomCodeAndSendEmail(request);
 
         return ResponseResult.success();
@@ -46,6 +48,7 @@ public class UserController {
     @PostMapping("/email/auth")
     public ResponseResult confirmAuthCode(@Valid @RequestBody UserEmailAndAuthCode request) {
 
+        log.info("request : {}", request);
         userService.confirmAuthCodeByEmail(request);
 
         return ResponseResult.success();
@@ -56,6 +59,7 @@ public class UserController {
 
         try {
 
+            log.info("request : {}", request);
             userService.register(request);
             return ResponseResult.success();
 
@@ -76,8 +80,9 @@ public class UserController {
     public ResponseResult login(@Valid @RequestBody UserLoginRequest request, HttpServletResponse response){
 
         try {
-            userService.login(request, response);
-            return ResponseResult.success();
+            log.info("request : {}", request);
+            String accessToken = userService.login(request, response);
+            return ResponseResult.success(accessToken);
         } catch (UserException e) {
             throw e;
         } catch (Exception e) {
@@ -91,9 +96,10 @@ public class UserController {
     public ResponseResult getTokenUserClaims(@AuthenticationPrincipal UsersEntity usersEntity){
 
         try {
+            log.info("user info : {}", usersEntity.getId());
             return ResponseResult.success(userService.getUserClaimsByUsersEntity(usersEntity));
         } catch (Exception e) {
-            log.info("Token User Claims Not Found :: ", e);
+            log.info("Token User Claims Not Found : {}", e);
             throw new UserException(ErrorCode.USER_TOKEN_ERROR);
         }
 
@@ -106,7 +112,7 @@ public class UserController {
             userService.logout(response);
             return ResponseResult.success();
         } catch (Exception e) {
-            log.info("Log out Fail :: ", e);
+            log.info("Log out Fail : {}", e);
             throw new UserException(ErrorCode.USER_LOGOUT_FAIL);
         }
 
@@ -117,6 +123,7 @@ public class UserController {
 
         try {
 
+            log.info("request : {}", request);
             userService.updatePassword(request);
             return ResponseResult.success();
 
@@ -127,6 +134,15 @@ public class UserController {
             throw new UserException(ErrorCode.UNKNOWN_ERROR);
         }
 
+    }
+
+    @PutMapping("/nickname")
+    public ResponseResult updateNickname(@AuthenticationPrincipal UsersEntity usersEntity,
+                                         @Valid @RequestBody UserNicknameUpdateRequest request){
+
+        userService.updateNickname(usersEntity.getId(), request);
+
+        return ResponseResult.success();
     }
 
 }

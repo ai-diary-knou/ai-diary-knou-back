@@ -1,6 +1,7 @@
 package com.aidiary.user.domain.repository;
 
 import com.aidiary.common.enums.DiarySentenceType;
+import com.aidiary.common.enums.DiaryStatus;
 import com.aidiary.user.domain.entity.DailyAnalysisSentencesEntity;
 import com.aidiary.user.domain.entity.DiariesEntity;
 import com.aidiary.user.domain.entity.UsersEntity;
@@ -8,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface JpaDailyAnalysisSentencesRepository extends JpaRepository<DailyAnalysisSentencesEntity, Long> {
@@ -16,9 +16,10 @@ public interface JpaDailyAnalysisSentencesRepository extends JpaRepository<Daily
     List<DailyAnalysisSentencesEntity> findByDiary(DiariesEntity diariesEntity);
 
     @Query("select s from DailyAnalysisSentencesEntity s join fetch s.diary d " +
-            "where d.status = 'ACTIVE' and s.user = :usersEntity " +
-            "and FUNCTION('MONTH', d.entryDate) = :month ")
-    List<DailyAnalysisSentencesEntity> findByUserAndMonth(UsersEntity usersEntity, int month);
+            "where d.status = :status and s.user = :usersEntity " +
+            "and FUNCTION('MONTH', d.entryDate) = :month " +
+            "and s.type = :type")
+    List<DailyAnalysisSentencesEntity> findByUserAndMonthAndStatusAndType(UsersEntity usersEntity, int month, DiaryStatus status, DiarySentenceType type);
 
     @Query("select s.content from DailyAnalysisSentencesEntity s " +
             "where s.diary = (select d from DiariesEntity d " +

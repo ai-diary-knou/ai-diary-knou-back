@@ -1,15 +1,11 @@
 package com.aidiary.common.utils;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
 
@@ -56,7 +52,6 @@ public class HybridEncUtil {
         String decryptedText = AESUtil.decrypt(aesEncryptedText, aesKey, iv);
 
         return decryptedText;
-        //return new String(decryptedText.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
 
 }

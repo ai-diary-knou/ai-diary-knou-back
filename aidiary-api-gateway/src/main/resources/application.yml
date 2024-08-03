@@ -37,14 +37,8 @@ spring:
               - OPTIONS
       routes:
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: http://localhost:8080
           predicates:
             - Path=/api/v1/**
           filters:
             - name: UserLoggingFilter
-#        - id: admin-service
-#          uri: lb://ADMIN-SERVICE
-#          predicates:
-#            - Path=/admin/**
-#          filters:
-#            - name: AdminLoggingFilter
