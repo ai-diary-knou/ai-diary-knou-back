@@ -21,7 +21,7 @@ public interface JpaDailyAnalysisWordsRepository extends JpaRepository<DailyAnal
     List<BigDecimal> findAverageEmotionScalesByUserAndBetween(UsersEntity usersEntity, Pageable pageable);
 
     @Query("select w.text from DailyAnalysisWordsEntity w join w.diary d " +
-            "where d.status = 'ACTIVE' and w.type = 'EMOTION' and w.user = :usersEntity " +
+            "where d.status = 'ACTIVE' and (w.type = 'CORE_VALUE' or w.type = 'SELF_THOUGHT') and w.user = :usersEntity " +
             "and d.entryDate >= :startDate and d.entryDate <= :endDate " +
             "group by w.text order by count(*) desc limit 10")
     List<String> findTenRecentRepetitiveKeywordsByUserAndBetween(UsersEntity usersEntity, LocalDate startDate, LocalDate endDate);

@@ -48,6 +48,10 @@ public class UsersEntity extends BaseEntity implements UserDetails {
         this.status = status;
     }
 
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
@@ -77,4 +81,5 @@ public class UsersEntity extends BaseEntity implements UserDetails {
     public boolean isEnabled() {
         return this.status.equals(ACTIVE);
     }
+
 }

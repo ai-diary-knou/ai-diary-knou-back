@@ -1,5 +1,7 @@
 package com.aidiary.common.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -11,6 +13,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+@Slf4j
 public class RSAUtil {
 
     private static final String ALGORITHM = "RSA/ECB/PKCS1Padding";
@@ -45,11 +48,20 @@ public class RSAUtil {
 
     // RSA로 복호화
     public static String rsaDecrypt(String encryptedText, PrivateKey privateKey)
-            throws NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        Cipher cipher = Cipher.getInstance(ALGORITHM);
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedText));
-        return new String(decryptedBytes, StandardCharsets.UTF_8);
+            throws NoSuchPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException  {
+        try {
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedText));
+            log.info("plain text :: {}", new String(decryptedBytes, StandardCharsets.UTF_8));
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+            log.info("RSA Decrypt FAIL :: ", e);
+            throw e;
+        } catch (Exception e) {
+            log.info("RSA Decrypt Error :: ", e);
+            throw e;
+        }
     }
 
     // 공개키 생성

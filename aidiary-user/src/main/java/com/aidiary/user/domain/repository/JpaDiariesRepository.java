@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface JpaDiariesRepository extends JpaRepository<DiariesEntity, Long> {
 
-    Optional<DiariesEntity> findByEntryDateAndStatus(LocalDate entryDate, DiaryStatus status);
+    Optional<DiariesEntity> findByUserAndEntryDateAndStatus(UsersEntity usersEntity, LocalDate entryDate, DiaryStatus status);
 
     Long countAllByUserAndStatus(UsersEntity usersEntity, DiaryStatus status);
 

@@ -77,8 +77,9 @@ public class DiaryService {
     public MonthlyReportResponse getMonthlyReportsOfDiaries(UsersEntity usersEntity, DiariesOfMonthGetRequest request) {
 
         LocalDate selectedDate = request.getSelectedDate();
-        List<DiaryOutline> monthlyDiaryReports = jpaDailyAnalysisSentencesRepository.findByUserAndMonth(usersEntity, selectedDate.getMonthValue())
-                .stream().map(DiaryOutline::of).collect(Collectors.toList());
+        List<DiaryOutline> monthlyDiaryReports = jpaDailyAnalysisSentencesRepository.findByUserAndMonthAndStatusAndType(
+                    usersEntity, selectedDate.getMonthValue(), ACTIVE, DiarySentenceType.LITERARY_SUMMARY
+                ).stream().map(DiaryOutline::of).collect(Collectors.toList());
 
         return MonthlyReportResponse.builder()
                 .selectedDate(selectedDate)
@@ -89,7 +90,7 @@ public class DiaryService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public DiarySaveRes saveDiaryAfterOpenAiAnalysis(UsersEntity usersEntity, DiaryCreateRequest request) throws Exception {
 
-        Optional<DiariesEntity> sameEntryDateDiary = jpaDiariesRepository.findByEntryDateAndStatus(request.entryDate(), DiaryStatus.ACTIVE);
+        Optional<DiariesEntity> sameEntryDateDiary = jpaDiariesRepository.findByUserAndEntryDateAndStatus(usersEntity, request.entryDate(), DiaryStatus.ACTIVE);
 
         if (sameEntryDateDiary.isPresent()) {
             throw new DiaryException(ErrorCode.DIARY_ALREADY_EXIST);
@@ -136,6 +137,11 @@ public class DiaryService {
 
         DiariesEntity originalDiary = jpaDiariesRepository.findById(diaryId)
                 .orElseThrow(() -> new DiaryException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!Objects.equals(originalDiary.getUser().getId(), usersEntity.getId())) {
+            throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
+        }
+
         originalDiary.updateStatus(INACTIVE);
 
         OpenAiContent openAiContent = openAiTransporter.getAnalysisContentFromTurbo3Point5(request.content());

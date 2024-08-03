@@ -67,7 +67,7 @@ public class SecurityConfiguration{
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/users")
                     .permitAll()
-                    .requestMatchers("/api/v1/users/me", "/api/v1/users/logout", "/api/v1/diaries", "/api/v1/diaries/**")
+                    .requestMatchers("/api/v1/users/me", "/api/v1/users/nickname", "/api/v1/users/password", "/api/v1/users/logout", "/api/v1/diaries", "/api/v1/diaries/**")
                     .authenticated()
                 )
                 .sessionManagement(session -> session
