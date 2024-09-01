@@ -1,6 +1,8 @@
 rootProject.name = 'ai-diary-knou-back'
 
 include('aidiary-common')
+include('aidiary-core')
 include('aidiary-api-gateway')
-include('aidiary-user')
-include('aidiary-admin')
+include('aidiary-infrastructure')
+include('aidiary-user-api')
+include('aidiary-user-auth')

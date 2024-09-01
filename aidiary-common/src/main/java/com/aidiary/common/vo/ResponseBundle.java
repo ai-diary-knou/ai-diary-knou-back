@@ -5,8 +5,6 @@ import com.aidiary.common.enums.ErrorStatus;
 import com.aidiary.common.exception.BaseException;
 import lombok.Builder;
 
-import static com.aidiary.common.enums.ErrorCode.UNKNOWN_ERROR;
-
 public abstract class ResponseBundle {
 
     @Builder
@@ -46,6 +44,12 @@ public abstract class ResponseBundle {
                     .message(errorCode.getMessage())
                     .build();
         }
+
+    }
+
+    @Builder
+    public record UserPrincipal(Long userId, String email, String nickname){
+
 
     }
 

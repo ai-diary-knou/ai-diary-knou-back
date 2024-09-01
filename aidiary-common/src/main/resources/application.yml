@@ -1,3 +1,5 @@
 spring:
   application:
     name: aidiary-common
+  encryptor:
+    seed-key: ${SEED_KEY}

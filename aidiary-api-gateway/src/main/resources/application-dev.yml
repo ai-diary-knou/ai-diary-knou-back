@@ -11,15 +11,44 @@ eureka:
 spring:
   application:
     name: aidiary-api-gateway
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: reactive
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
   cloud:
     gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
-        - name: GlobalFilter
-          args:
-            baseMessage: Spring Cloud Gateway Global Filter
-            preLogger: true
-            postLogger: true
+      allowed-uri:
+        server:
+          permitted-all:
+            any:
+              /api/v1/users/duplicate,
+              /api/v1/users/email/auth-code,
+              /api/v1/users/email/auth,
+              /api/v1/users/login,
+              /api/v1/users/password,
+              /api/v1/users/me
+            post:
+              /api/v1/users
+          authenticated:
+            /api/v1/users/me,
+            /api/v1/users/nickname,
+            /api/v1/users/password,
+            /api/v1/users/logout,
+            /api/v1/diaries/**
       globalcors:
         cors-configurations:
           '[/**]':
@@ -35,6 +64,13 @@ spring:
               - POST
               - DELETE
               - OPTIONS
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
       routes:
         - id: user-service
           uri: http://localhost:8080

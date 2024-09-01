@@ -1,0 +1,321 @@
+package com.aidiary.user.service;
+
+import com.aidiary.common.enums.DiarySentenceType;
+import com.aidiary.common.enums.DiaryStatus;
+import com.aidiary.common.enums.DiaryWordType;
+import com.aidiary.common.enums.ErrorCode;
+import com.aidiary.common.exception.DiaryException;
+import com.aidiary.common.utils.HybridEncryptor;
+import com.aidiary.common.vo.ResponseBundle.UserPrincipal;
+import com.aidiary.core.entity.DailyAnalysisSentencesEntity;
+import com.aidiary.core.entity.DailyAnalysisWordsEntity;
+import com.aidiary.core.entity.DiariesEntity;
+import com.aidiary.core.entity.UsersEntity;
+import com.aidiary.core.repository.JpaDailyAnalysisSentencesRepository;
+import com.aidiary.core.repository.JpaDailyAnalysisWordsRepository;
+import com.aidiary.core.repository.JpaDiariesRepository;
+import com.aidiary.infrastructure.transport.OpenAiTransporter;
+import com.aidiary.infrastructure.transport.response.OpenAiResponseBundle.*;
+import com.aidiary.user.model.DiaryRequestBundle;
+import com.aidiary.user.model.DiaryResponseBundle;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+import static com.aidiary.common.enums.DiaryStatus.ACTIVE;
+import static com.aidiary.common.enums.DiaryStatus.INACTIVE;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class DiaryService {
+
+    private final OpenAiTransporter openAiTransporter;
+    private final JpaDiariesRepository jpaDiariesRepository;
+    private final JpaDailyAnalysisWordsRepository jpaDailyAnalysisWordsRepository;
+    private final JpaDailyAnalysisSentencesRepository jpaDailyAnalysisSentencesRepository;
+    private final HybridEncryptor hybridEncryptor;
+
+    public DiaryResponseBundle.MainReportResponse getMainReportsOfDiaries(UserPrincipal userPrincipal) {
+
+        UsersEntity usersEntity = convertToUsersEntity(userPrincipal);
+        LocalDate today = LocalDate.now();
+
+        List<String> recentSevenLiterarySummaries = jpaDailyAnalysisSentencesRepository.findSentenceByUserAndTypeAndPage(
+                usersEntity, DiarySentenceType.LITERARY_SUMMARY, PageRequest.of(0, 7, Sort.by("s.id"))
+        );
+
+        List<BigDecimal> recentSevenAverageEmotionScales = jpaDailyAnalysisWordsRepository.findAverageEmotionScalesByUserAndBetween(
+                usersEntity, PageRequest.of(0, 7, Sort.by("d.id"))
+        );
+
+        List<String> recentTenRepetitiveKeywords = jpaDailyAnalysisWordsRepository.findTenRecentRepetitiveKeywordsByUserAndBetween(
+                usersEntity, today.minusDays(30), today
+        );
+
+        List<String> recentRecommendedActions = jpaDailyAnalysisSentencesRepository.findRecentRecommendedActions(usersEntity);
+
+        return DiaryResponseBundle.MainReportResponse.builder()
+                .recentLiterarySummaries(recentSevenLiterarySummaries)
+                .recentAverageEmotionScales(recentSevenAverageEmotionScales)
+                .recentRepetitiveKeywords(recentTenRepetitiveKeywords)
+                .recentRecommendedActions(recentRecommendedActions)
+                .build();
+    }
+
+    private UsersEntity convertToUsersEntity(UserPrincipal userPrincipal) {
+        return UsersEntity.builder()
+                .id(userPrincipal.userId())
+                .email(userPrincipal.email())
+                .nickname(userPrincipal.nickname())
+                .build();
+    }
+
+
+    public DiaryResponseBundle.MonthlyReportResponse getMonthlyReportsOfDiaries(UserPrincipal userPrincipal, DiaryRequestBundle.DiariesOfMonthGetRequest request) {
+
+        LocalDate selectedDate = request.getSelectedDate();
+        List<DiaryResponseBundle.DiaryOutline> monthlyDiaryReports = jpaDailyAnalysisSentencesRepository.findByUserAndMonthAndStatusAndType(
+                    convertToUsersEntity(userPrincipal), selectedDate.getMonthValue(), ACTIVE, DiarySentenceType.LITERARY_SUMMARY
+                ).stream().map(DiaryResponseBundle.DiaryOutline::of).collect(Collectors.toList());
+
+        return DiaryResponseBundle.MonthlyReportResponse.builder()
+                .selectedDate(selectedDate)
+                .monthlyDiaryReports(monthlyDiaryReports)
+                .build();
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public DiaryResponseBundle.DiarySaveRes saveDiaryAfterOpenAiAnalysis(UserPrincipal userPrincipal, DiaryRequestBundle.DiaryCreateRequest request) throws Exception {
+
+        UsersEntity usersEntity = convertToUsersEntity(userPrincipal);
+        Optional<DiariesEntity> sameEntryDateDiary = jpaDiariesRepository.findByUserAndEntryDateAndStatus(usersEntity, request.entryDate(), DiaryStatus.ACTIVE);
+
+        if (sameEntryDateDiary.isPresent()) {
+            throw new DiaryException(ErrorCode.DIARY_ALREADY_EXIST);
+        }
+
+        OpenAiContent openAiContent = openAiTransporter.getAnalysisContentFromTurbo3Point5(request.content());
+
+        // 다이어리 정보 저장
+        DiariesEntity diariesEntity = jpaDiariesRepository.save(
+                DiariesEntity.builder()
+                        .user(usersEntity)
+                        .content(hybridEncryptor.encrypt(request.content()))
+                        .entryDate(request.entryDate())
+                        .status(ACTIVE)
+                        .build()
+        );
+
+        // words 저장
+        OpenAiEmotions openAiEmotions = openAiContent.properties().emotions();
+        OpenAiSelfThoughts openAiSelfThoughts = openAiContent.properties().selfThoughts();
+        OpenAiCoreValues openAiCoreValues = openAiContent.properties().coreValues();
+
+        saveWords(usersEntity, diariesEntity, DiaryWordType.EMOTION, openAiEmotions.words());
+        saveWords(usersEntity, diariesEntity, DiaryWordType.SELF_THOUGHT, openAiSelfThoughts.words());
+        saveWords(usersEntity, diariesEntity, DiaryWordType.CORE_VALUE, openAiCoreValues.words());
+
+        // sentence 저장
+        List<String> recommendedActions = openAiContent.properties().recommendedActions();
+        List<String> additionals = openAiContent.properties().additionals();
+        String literarySummary = openAiContent.summaries().literarySummary();
+
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.EMOTION, openAiEmotions.content());
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.SELF_THOUGHT, openAiSelfThoughts.content());
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.CORE_VALUE, openAiCoreValues.content());
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.RECOMMENDED_ACTION, recommendedActions);
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.ADDITIONAL, additionals);
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.LITERARY_SUMMARY, literarySummary);
+
+        return DiaryResponseBundle.DiarySaveRes.builder().diaryId(diariesEntity.getId()).build();
+    }
+
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
+    public DiaryResponseBundle.DiarySaveRes updateDiaryAfterOpenAiAnalysis(UserPrincipal userPrincipal, Long diaryId, DiaryRequestBundle.DiaryUpdateRequest request) throws Exception {
+
+        UsersEntity usersEntity = convertToUsersEntity(userPrincipal);
+        DiariesEntity originalDiary = jpaDiariesRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!Objects.equals(originalDiary.getUser().getId(), usersEntity.getId())) {
+            throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
+        }
+
+        originalDiary.updateStatus(INACTIVE);
+
+        OpenAiContent openAiContent = openAiTransporter.getAnalysisContentFromTurbo3Point5(request.content());
+
+        // 다이어리 정보 저장
+        DiariesEntity diariesEntity = jpaDiariesRepository.save(
+                DiariesEntity.builder()
+                        .user(usersEntity)
+                        .content(hybridEncryptor.encrypt(request.content()))
+                        .entryDate(originalDiary.getEntryDate())
+                        .status(ACTIVE)
+                        .build()
+        );
+
+        // words 저장
+        OpenAiEmotions openAiEmotions = openAiContent.properties().emotions();
+        OpenAiSelfThoughts openAiSelfThoughts = openAiContent.properties().selfThoughts();
+        OpenAiCoreValues openAiCoreValues = openAiContent.properties().coreValues();
+
+        saveWords(usersEntity, diariesEntity, DiaryWordType.EMOTION, openAiEmotions.words());
+        saveWords(usersEntity, diariesEntity, DiaryWordType.SELF_THOUGHT, openAiSelfThoughts.words());
+        saveWords(usersEntity, diariesEntity, DiaryWordType.CORE_VALUE, openAiCoreValues.words());
+
+        // sentence 저장
+        List<String> recommendedActions = openAiContent.properties().recommendedActions();
+        List<String> additionals = openAiContent.properties().additionals();
+        String literarySummary = openAiContent.summaries().literarySummary();
+
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.EMOTION, openAiEmotions.content());
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.SELF_THOUGHT, openAiSelfThoughts.content());
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.CORE_VALUE, openAiCoreValues.content());
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.RECOMMENDED_ACTION, recommendedActions);
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.ADDITIONAL, additionals);
+        saveSentences(usersEntity, diariesEntity, DiarySentenceType.LITERARY_SUMMARY, literarySummary);
+
+        return DiaryResponseBundle.DiarySaveRes.builder().diaryId(diariesEntity.getId()).build();
+    }
+
+    private void saveWords(UsersEntity usersEntity, DiariesEntity diariesEntity, DiaryWordType diaryWordType, List<OpenAiWord> words){
+
+        List<DailyAnalysisWordsEntity> dailyAnalysisWordsEntities = new ArrayList<>();
+
+        for (OpenAiWord openAiWord : words) {
+            if (Objects.isNull(openAiWord)) continue;
+            dailyAnalysisWordsEntities.add(
+                    DailyAnalysisWordsEntity.builder()
+                            .user(usersEntity)
+                            .diary(diariesEntity)
+                            .type(diaryWordType)
+                            .text(openAiWord.text())
+                            .scale(openAiWord.scale())
+                            .build()
+            );
+        }
+
+        jpaDailyAnalysisWordsRepository.saveAll(dailyAnalysisWordsEntities);
+
+    }
+
+    private void saveSentences(UsersEntity usersEntity, DiariesEntity diariesEntity, DiarySentenceType diarySentenceType, String sentence) {
+
+        if (!StringUtils.hasText(sentence)) return;
+
+        jpaDailyAnalysisSentencesRepository.save(
+                DailyAnalysisSentencesEntity.builder()
+                        .user(usersEntity)
+                        .diary(diariesEntity)
+                        .type(diarySentenceType)
+                        .content(sentence)
+                        .build()
+        );
+
+    }
+
+    private void saveSentences(UsersEntity usersEntity, DiariesEntity diariesEntity, DiarySentenceType diarySentenceType, List<String> sentences) {
+
+        List<DailyAnalysisSentencesEntity> dailyAnalysisSentencesEntities = new ArrayList<>();
+
+        for (String sentence : sentences) {
+            dailyAnalysisSentencesEntities.add(
+                    DailyAnalysisSentencesEntity.builder()
+                            .user(usersEntity)
+                            .diary(diariesEntity)
+                            .type(diarySentenceType)
+                            .content(sentence)
+                            .build()
+            );
+        }
+
+        jpaDailyAnalysisSentencesRepository.saveAll(dailyAnalysisSentencesEntities);
+
+    }
+
+    public DiaryResponseBundle.DiaryDetail getDiaryDetail(Long userId, Long diaryId) throws Exception {
+
+        DiariesEntity diariesEntity = jpaDiariesRepository.findById(diaryId)
+                .orElseThrow(() -> new DiaryException(ErrorCode.DIARY_NOT_FOUND));
+
+        if (!diariesEntity.getUser().getId().equals(userId)) {
+            throw new DiaryException(ErrorCode.DIARY_OWNER_MISMATCH);
+        }
+
+        if (INACTIVE.equals(diariesEntity.getStatus())) {
+            throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
+        }
+
+        String diaryContent = hybridEncryptor.decrypt(diariesEntity.getContent());
+
+        Map<DiaryWordType, List<DiaryResponseBundle.DiaryWord>> wordsByType = diaryWordsByType(jpaDailyAnalysisWordsRepository.findByDiary(diariesEntity));
+        Map<DiarySentenceType, List<String>> sentencesByType = diarySentencesByType(jpaDailyAnalysisSentencesRepository.findByDiary(diariesEntity));
+
+        return DiaryResponseBundle.DiaryDetail.builder()
+                .entryDate(diariesEntity.getEntryDate())
+                .emotions(
+                        DiaryResponseBundle.DiaryEmotions.builder()
+                                .content(sentencesByType.get(DiarySentenceType.EMOTION).get(0))
+                                .words(wordsByType.get(DiaryWordType.EMOTION))
+                                .build()
+                )
+                .selfThoughts(
+                        DiaryResponseBundle.DiarySelfThoughts.builder()
+                                .content(sentencesByType.get(DiarySentenceType.SELF_THOUGHT).get(0))
+                                .words(wordsByType.get(DiaryWordType.SELF_THOUGHT))
+                                .build()
+                )
+                .coreValues(
+                        DiaryResponseBundle.DiaryCoreValues.builder()
+                                .content(sentencesByType.get(DiarySentenceType.CORE_VALUE).get(0))
+                                .words(wordsByType.get(DiaryWordType.CORE_VALUE))
+                                .build()
+                )
+                .recommendedActions(sentencesByType.get(DiarySentenceType.RECOMMENDED_ACTION))
+                .additionals(sentencesByType.get(DiarySentenceType.ADDITIONAL))
+                .literarySummary(sentencesByType.get(DiarySentenceType.LITERARY_SUMMARY).get(0))
+                .diaryContent(diaryContent)
+                .build();
+    }
+
+    private Map<DiaryWordType, List<DiaryResponseBundle.DiaryWord>> diaryWordsByType(List<DailyAnalysisWordsEntity> dailyAnalysisWordsEntities){
+
+        Map<DiaryWordType, List<DiaryResponseBundle.DiaryWord>> wordsByType = new HashMap<>();
+
+        for (DailyAnalysisWordsEntity dailyAnalysisWordsEntity : dailyAnalysisWordsEntities) {
+            List<DiaryResponseBundle.DiaryWord> words = wordsByType.getOrDefault(dailyAnalysisWordsEntity.getType(), new ArrayList<DiaryResponseBundle.DiaryWord>());
+            words.add(DiaryResponseBundle.DiaryWord.of(dailyAnalysisWordsEntity));
+            wordsByType.put(dailyAnalysisWordsEntity.getType(), words);
+        }
+
+        return wordsByType;
+    }
+
+    private Map<DiarySentenceType, List<String>> diarySentencesByType(List<DailyAnalysisSentencesEntity> dailyAnalysisSentencesEntities) {
+
+        Map<DiarySentenceType, List<String>> sentencesByType = new HashMap<>();
+
+        for (DailyAnalysisSentencesEntity dailyAnalysisSentencesEntity : dailyAnalysisSentencesEntities) {
+            List<String> sentences = sentencesByType.getOrDefault(dailyAnalysisSentencesEntity.getContent(), new ArrayList<String>());
+            sentences.add(dailyAnalysisSentencesEntity.getContent());
+            sentencesByType.put(dailyAnalysisSentencesEntity.getType(), sentences);
+        }
+
+        return sentencesByType;
+    }
+
+    public Long getUserDiaryCount(UserPrincipal userPrincipal) {
+
+        return jpaDiariesRepository.countAllByUserAndStatus(convertToUsersEntity(userPrincipal), ACTIVE);
+    }
+}

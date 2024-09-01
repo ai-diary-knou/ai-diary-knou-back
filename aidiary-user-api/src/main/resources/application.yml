@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+client:
+  domain: http://localhost:5173
+
+spring:
+  application:
+    name: user-service
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USER}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+  encryptor:
+    seed-key: ${SEED_KEY}
+  jwt:
+    secret-key: ${JWT_KEY}
+    expire-time: 10800000 # 3 x 60 x 60 x 1000
+openapi:
+  openai:
+    key: ${OPEN_AI_KEY}
+
+logging:
+  level:
+    root: info
+
+eureka:
+  instance:
+    lease-renewal-interval-in-seconds: 10  # 기본값은 30초
+    lease-expiration-duration-in-seconds: 30  # 기본값은 90초
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka

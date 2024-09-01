@@ -25,15 +25,18 @@ public class UserLoggingFilter extends AbstractGatewayFilterFactory<UserLoggingF
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-
             ServerHttpRequest request = exchange.getRequest();
             ServerHttpResponse response = exchange.getResponse();
 
-            log.info("UserLoggingFilter Pre Log >> ");
 
+
+           // Post Filter
             return chain.filter(exchange).then(Mono.fromRunnable(() -> {
 
             }));
         };
     }
+
+
+
 }
