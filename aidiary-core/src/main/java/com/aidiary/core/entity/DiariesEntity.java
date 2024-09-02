@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+import static com.aidiary.common.enums.DiaryStatus.ACTIVE;
+
 @Entity
 @Table(name = "diaries")
 @AllArgsConstructor
@@ -31,5 +33,7 @@ public class DiariesEntity extends BaseEntity {
     public void updateStatus(DiaryStatus status) {
         this.status = status;
     }
+
+    public boolean isActivated() { return ACTIVE.equals(this.status); }
 
 }

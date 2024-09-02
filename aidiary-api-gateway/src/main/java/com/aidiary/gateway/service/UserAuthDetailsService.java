@@ -4,7 +4,7 @@ package com.aidiary.gateway.service;
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
 import com.aidiary.core.entity.UsersEntity;
-import com.aidiary.core.repository.JpaUsersRepository;
+import com.aidiary.core.repository.jpa.JpaUsersRepository;
 import com.aidiary.gateway.dto.UserClaims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

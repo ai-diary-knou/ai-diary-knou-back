@@ -1,8 +1,8 @@
-package com.aidiary.user.exception;
+package com.aidiary.diary.exception;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.enums.ErrorStatus;
-import com.aidiary.common.exception.UserException;
+import com.aidiary.common.exception.DiaryException;
 import com.aidiary.common.vo.ResponseBundle.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -34,9 +34,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
-    @ExceptionHandler(UserException.class)
-    public ResponseEntity<ErrorResponse> handleUserException(UserException e) {
-        log.info("UserException Error ::", e);
+    @ExceptionHandler(DiaryException.class)
+    public ResponseEntity<ErrorResponse> handleDiaryException(DiaryException e) {
+        log.info("DiaryException Error ::", e);
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(ErrorStatus.FAIL)
                 .code(e.getErrorCode().name())

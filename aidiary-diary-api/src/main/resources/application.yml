@@ -2,11 +2,11 @@ server:
   port: 8082
 
 client:
-  domain: ai-diary-knou-front.vercel.app
+  domain: http://localhost:5173
 
 spring:
   application:
-    name: user-service
+    name: diary-service
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
@@ -33,11 +33,11 @@ spring:
         default_batch_fetch_size: 100
         dialect: org.hibernate.dialect.MySQLDialect
     open-in-view: false
+  encryptor:
+    seed-key: ${SEED_KEY}
   jwt:
     secret-key: ${JWT_KEY}
     expire-time: 10800000 # 3 x 60 x 60 x 1000
-  encryptor:
-    seed-key: ${SEED_KEY}
 openapi:
   openai:
     key: ${OPEN_AI_KEY}
@@ -48,6 +48,8 @@ logging:
 
 eureka:
   instance:
+    lease-renewal-interval-in-seconds: 10  # 기본값은 30초
+    lease-expiration-duration-in-seconds: 30  # 기본값은 90초
     instance-id: ${spring.cloud.client.hostname}:${spring.application.instance_id:${random.value}}
   client:
     register-with-eureka: true

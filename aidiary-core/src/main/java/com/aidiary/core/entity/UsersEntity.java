@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Objects;
+
 import static com.aidiary.common.enums.UserStatus.BLOCKED;
 import static com.aidiary.common.enums.UserStatus.INACTIVE;
 
@@ -55,5 +57,8 @@ public class UsersEntity extends BaseEntity {
         return !this.status.equals(BLOCKED);
     }
 
+    public boolean isSameUser(UsersEntity comparingUser){ return isSameUser(comparingUser.getId()); }
+
+    public boolean isSameUser(Long comparingUserId){ return Objects.equals(this.id, comparingUserId); }
 
 }

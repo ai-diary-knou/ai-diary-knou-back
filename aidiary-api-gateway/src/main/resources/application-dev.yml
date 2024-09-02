@@ -14,21 +14,6 @@ spring:
   main:
     allow-bean-definition-overriding: true
     web-application-type: reactive
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        default_batch_fetch_size: 100
-        dialect: org.hibernate.dialect.MySQLDialect
-    open-in-view: false
   cloud:
     gateway:
       allowed-uri:
@@ -75,6 +60,28 @@ spring:
         - id: user-service
           uri: http://localhost:8080
           predicates:
-            - Path=/api/v1/**
-          filters:
-            - name: UserLoggingFilter
+            - Path=/api/v1/users/**
+        - id: diary-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/v1/diaries/**
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+  encryptor:
+    seed-key: ${SEED_KEY}
+  jwt:
+    secret-key: ${JWT_KEY}
+    expire-time: 10800000 # 3 x 60 x 60 x 1000

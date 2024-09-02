@@ -1,12 +1,12 @@
 server:
-  port: 8082
+  port: 8080
 
 client:
   domain: ai-diary-knou-front.vercel.app
 
 spring:
   application:
-    name: user-service
+    name: diary-service
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://ai-diary-mysql.mysql.database.azure.com:3306/aidiary
