@@ -2,7 +2,8 @@ package com.aidiary.infrastructure.transport;
 
 import com.aidiary.infrastructure.transport.feignClient.OpenAiClient;
 import com.aidiary.infrastructure.transport.request.OpenAiRequestBundle;
-import com.aidiary.infrastructure.transport.response.OpenAiResponseBundle;
+import com.aidiary.infrastructure.transport.response.OpenAiResponseBundle.OpenAiAnalysisRes;
+import com.aidiary.infrastructure.transport.response.OpenAiResponseBundle.OpenAiContent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +24,15 @@ public class OpenAiTransporter {
     private final OpenAiClient openAiClient;
     private final ObjectMapper objectMapper;
 
-    public OpenAiResponseBundle.OpenAiContent getAnalysisContentFromTurbo3Point5(String userContent) throws JsonProcessingException {
+    public OpenAiContent getAnalysisContentFromTurbo3Point5(String userContent) throws JsonProcessingException {
 
-        OpenAiResponseBundle.OpenAiAnalysisRes openAiResponse = getAnalysisFromTurbo3Point5(userContent);
+        OpenAiAnalysisRes openAiResponse = getAnalysisFromTurbo3Point5(userContent);
         String jsonContent = openAiResponse.choices().get(0).message().content();
         return parseOpenAiContent(jsonContent);
 
     }
 
-    public OpenAiResponseBundle.OpenAiAnalysisRes getAnalysisFromTurbo3Point5(String userContent) throws JsonProcessingException {
+    public OpenAiAnalysisRes getAnalysisFromTurbo3Point5(String userContent) throws JsonProcessingException {
 
         String authorization = "Bearer " + openAiKey;
 
@@ -48,7 +49,7 @@ public class OpenAiTransporter {
                 "만들어낸 문학적인 한 줄 문장을 담음."
         );
 
-        OpenAiResponseBundle.OpenAiAnalysisRes res = openAiClient.postToChatCompletions(authorization, OpenAiRequestBundle.OpenAiAnalysisReq.builder()
+        OpenAiAnalysisRes res = openAiClient.postToChatCompletions(authorization, OpenAiRequestBundle.OpenAiAnalysisReq.builder()
                 .model("gpt-3.5-turbo")
                 .messages(List.of(
                         OpenAiRequestBundle.OpenAiMessage.builder()
@@ -68,9 +69,9 @@ public class OpenAiTransporter {
         return res;
     }
 
-    public OpenAiResponseBundle.OpenAiContent parseOpenAiContent(String jsonContent) throws JsonProcessingException {
+    public OpenAiContent parseOpenAiContent(String jsonContent) throws JsonProcessingException {
 
-        return objectMapper.readValue(jsonContent, OpenAiResponseBundle.OpenAiContent.class);
+        return objectMapper.readValue(jsonContent, OpenAiContent.class);
 
     }
 
