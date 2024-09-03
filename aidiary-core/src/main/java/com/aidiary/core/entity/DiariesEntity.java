@@ -22,11 +22,15 @@ public class DiariesEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UsersEntity user;
+
     private String content;
+
     private LocalDate entryDate;
+
     @Enumerated(EnumType.STRING)
     private DiaryStatus status;
 

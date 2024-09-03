@@ -16,3 +16,7 @@ spring:
     open-in-view: false
   encryptor:
     seed-key: ${SEED_KEY}
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: trace

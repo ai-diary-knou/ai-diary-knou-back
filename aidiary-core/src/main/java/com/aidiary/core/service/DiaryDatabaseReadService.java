@@ -1,13 +1,11 @@
 package com.aidiary.core.service;
 
-import com.aidiary.common.enums.DiarySentenceType;
 import com.aidiary.common.enums.DiaryStatus;
-import com.aidiary.common.enums.DiaryWordType;
-import com.aidiary.common.vo.PagingRequest;
-import com.aidiary.core.dto.DiaryDatabaseRequestBundle.CurrentMonthWrittenDiariesRequest;
+import com.aidiary.core.dto.DiaryDatabaseRequestBundle.AverageWordsScaleOfTypeByUserWithinPageRequest;
+import com.aidiary.core.dto.DiaryDatabaseRequestBundle.DiarySentencesOfTypeInMonthRequest;
+import com.aidiary.core.dto.DiaryDatabaseRequestBundle.DiarySentencesOfTypeWithinPageRequest;
+import com.aidiary.core.dto.DiaryDatabaseRequestBundle.TopNRepetitiveDiaryWordsOfTypesBetweenDatesRequest;
 import com.aidiary.core.entity.*;
-import com.aidiary.core.repository.jpa.JpaDailyAnalysisSentencesRepository;
-import com.aidiary.core.repository.jpa.JpaDailyAnalysisWordsRepository;
 import com.aidiary.core.repository.jpa.JpaDiariesRepository;
 import com.aidiary.core.utils.QueryDslOrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
@@ -16,13 +14,13 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import static com.aidiary.common.enums.DiaryStatus.ACTIVE;
-import static com.aidiary.common.enums.DiaryWordType.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -30,8 +28,6 @@ import static com.aidiary.common.enums.DiaryWordType.*;
 public class DiaryDatabaseReadService {
 
     private final JpaDiariesRepository jpaDiariesRepository;
-    private final JpaDailyAnalysisWordsRepository jpaDailyAnalysisWordsRepository;
-    private final JpaDailyAnalysisSentencesRepository jpaDailyAnalysisSentencesRepository;
     private final JPAQueryFactory jpaQueryFactory;
 
     public Optional<DiariesEntity> findDiaryById(Long diaryId) {
@@ -43,18 +39,24 @@ public class DiaryDatabaseReadService {
     }
 
     public Optional<DiariesEntity> findActiveDiaryByUserAndEntryDate(UsersEntity user, LocalDate entryDate, DiaryStatus status) {
-        return jpaDiariesRepository.findByUserAndEntryDateAndStatus(user, entryDate, ACTIVE);
+        return jpaDiariesRepository.findByUserAndEntryDateAndStatus(user, entryDate, status);
     }
 
     public List<DailyAnalysisWordsEntity> findWordsFromDiary(DiariesEntity diariesEntity) {
-        return jpaDailyAnalysisWordsRepository.findByDiary(diariesEntity);
+
+        QDailyAnalysisWordsEntity qDailyAnalysisWordsEntity = QDailyAnalysisWordsEntity.dailyAnalysisWordsEntity;
+        QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
+
+        return jpaQueryFactory.selectFrom(qDailyAnalysisWordsEntity)
+                .join(qDailyAnalysisWordsEntity.diary, qDiariesEntity)
+                .where(
+                        qDiariesEntity.eq(diariesEntity),
+                        qDiariesEntity.status.eq(ACTIVE)
+                )
+                .fetch();
     }
 
     public List<DailyAnalysisSentencesEntity> findSentencesFromDiary(DiariesEntity diariesEntity) {
-        return jpaDailyAnalysisSentencesRepository.findByDiary(diariesEntity);
-    }
-
-    public List<DailyAnalysisSentencesEntity> findByUserAndMonthAndStatusAndType(CurrentMonthWrittenDiariesRequest request) {
 
         QDailyAnalysisSentencesEntity qDailyAnalysisSentencesEntity = QDailyAnalysisSentencesEntity.dailyAnalysisSentencesEntity;
         QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
@@ -62,30 +64,47 @@ public class DiaryDatabaseReadService {
         return jpaQueryFactory.selectFrom(qDailyAnalysisSentencesEntity)
                 .join(qDailyAnalysisSentencesEntity.diary, qDiariesEntity)
                 .where(
+                        qDiariesEntity.eq(diariesEntity),
+                        qDiariesEntity.status.eq(ACTIVE)
+                )
+                .fetch();
+    }
+
+    public List<DailyAnalysisSentencesEntity> findSentencesOfTypeByUserInMonth(DiarySentencesOfTypeInMonthRequest request) {
+
+        QDailyAnalysisSentencesEntity qDailyAnalysisSentencesEntity = QDailyAnalysisSentencesEntity.dailyAnalysisSentencesEntity;
+        QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
+
+        return jpaQueryFactory.selectFrom(qDailyAnalysisSentencesEntity)
+                .join(qDailyAnalysisSentencesEntity.diary, qDiariesEntity)
+                .where(
+                        qDiariesEntity.user.eq(request.usersEntity()),
                         qDiariesEntity.status.eq(request.diaryStatus()),
-                        qDailyAnalysisSentencesEntity.user.eq(request.usersEntity()),
+                        qDiariesEntity.entryDate.year().eq(request.year()),
                         qDiariesEntity.entryDate.month().eq(request.month()),
                         qDailyAnalysisSentencesEntity.type.eq(request.diarySentenceType())
                 )
                 .fetch();
     }
 
-    public List<String> findSentenceByUserAndTypeAndPage(UsersEntity usersEntity, DiaryStatus diaryStatus, DiarySentenceType diarySentenceType, PagingRequest pagingRequest) {
+    public List<String> findSentencesOfTypeByUserWithinPage(DiarySentencesOfTypeWithinPageRequest request) {
 
         QDailyAnalysisSentencesEntity qDailyAnalysisSentencesEntity = QDailyAnalysisSentencesEntity.dailyAnalysisSentencesEntity;
         QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
 
         return jpaQueryFactory.select(qDailyAnalysisSentencesEntity.content)
+                .from(qDailyAnalysisSentencesEntity)
                 .join(qDailyAnalysisSentencesEntity.diary, qDiariesEntity)
                 .where(
-                        qDailyAnalysisSentencesEntity.user.eq(usersEntity),
-                        qDiariesEntity.status.eq(diaryStatus),
-                        qDailyAnalysisSentencesEntity.type.eq(diarySentenceType)
+                        qDiariesEntity.user.eq(request.usersEntity()),
+                        qDiariesEntity.status.eq(request.diaryStatus()),
+                        qDailyAnalysisSentencesEntity.type.eq(request.diarySentenceType())
                 )
+                .orderBy(QueryDslOrderSpecifier.getOrderSpecifier(request.pagingRequest()))
                 .fetch();
     }
 
-    public List<BigDecimal> findAverageEmotionScalesByUserAndDatesBetween(UsersEntity usersEntity, DiaryStatus diaryStatus, DiaryWordType diaryWordType, PagingRequest pagingRequest) {
+    public List<BigDecimal> findAverageWordsScaleOfTypeByUserWithinPage(AverageWordsScaleOfTypeByUserWithinPageRequest request) {
 
         QDailyAnalysisWordsEntity qDailyAnalysisWordsEntity = QDailyAnalysisWordsEntity.dailyAnalysisWordsEntity;
         QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
@@ -96,17 +115,17 @@ public class DiaryDatabaseReadService {
                 .from(qDailyAnalysisWordsEntity)
                 .join(qDailyAnalysisWordsEntity.diary, qDiariesEntity)
                 .where(
-                        qDiariesEntity.status.eq(diaryStatus),
-                        qDailyAnalysisWordsEntity.type.eq(diaryWordType),
-                        qDailyAnalysisWordsEntity.user.eq(usersEntity)
+                        qDiariesEntity.user.eq(request.usersEntity()),
+                        qDiariesEntity.status.eq(request.diaryStatus()),
+                        qDailyAnalysisWordsEntity.type.eq(request.diaryWordType())
                 )
                 .groupBy(qDiariesEntity.id)
-                .orderBy(QueryDslOrderSpecifier.getOrderSpecifier(pagingRequest, qDiariesEntity))
+                .orderBy(QueryDslOrderSpecifier.getOrderSpecifier(request.pagingRequest()))
                 .fetch();
 
     }
 
-    public List<String> findTenRecentRepetitiveKeywordsByUserAndBetween(UsersEntity usersEntity, DiaryStatus diaryStatus, List<DiaryWordType> diaryWordTypes, LocalDate startDate, LocalDate endDate){
+    public List<String> findTopNRepetitiveWordsOfTypesBetweenDates(TopNRepetitiveDiaryWordsOfTypesBetweenDatesRequest request){
 
         QDailyAnalysisWordsEntity qDailyAnalysisWordsEntity = QDailyAnalysisWordsEntity.dailyAnalysisWordsEntity;
         QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
@@ -116,34 +135,14 @@ public class DiaryDatabaseReadService {
                 .from(qDailyAnalysisWordsEntity)
                 .join(qDailyAnalysisWordsEntity.diary, qDiariesEntity)
                 .where(
-                        qDiariesEntity.status.eq(diaryStatus),
-                        qDailyAnalysisWordsEntity.type.in(diaryWordTypes),
-                        qDailyAnalysisWordsEntity.user.eq(usersEntity),
-                        qDiariesEntity.entryDate.between(startDate, endDate)
+                        qDailyAnalysisWordsEntity.user.eq(request.usersEntity()),
+                        qDiariesEntity.status.eq(request.diaryStatus()),
+                        qDailyAnalysisWordsEntity.type.in(request.diaryWordTypes()),
+                        qDiariesEntity.entryDate.between(request.startDate(), request.endDate())
                 )
                 .groupBy(qDailyAnalysisWordsEntity.text)
                 .orderBy(qDailyAnalysisWordsEntity.count().desc())
-                .limit(10)
-                .fetch();
-
-    }
-
-    public List<String> findRecentRecommendedActions(UsersEntity usersEntity, DiaryStatus diaryStatus, DiarySentenceType diarySentenceType, PagingRequest pagingRequest) {
-
-        QDailyAnalysisSentencesEntity qDailyAnalysisSentencesEntity = QDailyAnalysisSentencesEntity.dailyAnalysisSentencesEntity;
-        QDiariesEntity qDiariesEntity = QDiariesEntity.diariesEntity;
-
-        return jpaQueryFactory.select(qDailyAnalysisSentencesEntity.content)
-                .where(
-                        qDiariesEntity.eq(
-                                jpaQueryFactory.selectFrom(qDiariesEntity)
-                                        .where(
-                                                qDiariesEntity.user.eq(usersEntity),
-                                                qDiariesEntity.status.eq(diaryStatus)
-                                        ).orderBy(QueryDslOrderSpecifier.getOrderSpecifier(pagingRequest, qDiariesEntity))
-                        ),
-                        qDailyAnalysisSentencesEntity.type.eq(diarySentenceType)
-                )
+                .limit(request.limit())
                 .fetch();
 
     }

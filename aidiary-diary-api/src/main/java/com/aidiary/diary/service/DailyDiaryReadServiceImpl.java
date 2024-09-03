@@ -50,25 +50,25 @@ public class DailyDiaryReadServiceImpl implements DailyDiaryReadService {
                 .entryDate(diariesEntity.getEntryDate())
                 .emotions(
                         DiaryEmotions.builder()
-                                .content(sentencesByType.get(DiarySentenceType.EMOTION).get(0))
+                                .content(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.EMOTION))
                                 .words(wordsByType.get(DiaryWordType.EMOTION))
                                 .build()
                 )
                 .selfThoughts(
                         DiarySelfThoughts.builder()
-                                .content(sentencesByType.get(DiarySentenceType.SELF_THOUGHT).get(0))
+                                .content(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.SELF_THOUGHT))
                                 .words(wordsByType.get(DiaryWordType.SELF_THOUGHT))
                                 .build()
                 )
                 .coreValues(
                         DiaryCoreValues.builder()
-                                .content(sentencesByType.get(DiarySentenceType.CORE_VALUE).get(0))
+                                .content(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.CORE_VALUE))
                                 .words(wordsByType.get(DiaryWordType.CORE_VALUE))
                                 .build()
                 )
                 .recommendedActions(sentencesByType.get(DiarySentenceType.RECOMMENDED_ACTION))
                 .additionals(sentencesByType.get(DiarySentenceType.ADDITIONAL))
-                .literarySummary(sentencesByType.get(DiarySentenceType.LITERARY_SUMMARY).get(0))
+                .literarySummary(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.LITERARY_SUMMARY))
                 .diaryContent(diaryContent)
                 .build();
     }
@@ -98,6 +98,11 @@ public class DailyDiaryReadServiceImpl implements DailyDiaryReadService {
         }
 
         return sentencesByType;
+    }
+
+    public String getFirstSentenceFromMapByType(Map<DiarySentenceType, List<String>> sentencesByType, DiarySentenceType diarySentenceType) {
+        List<String> sentences = sentencesByType.getOrDefault(diarySentenceType, new ArrayList<>());
+        return sentences.isEmpty() ? null : sentences.get(0);
     }
 
     @Override

@@ -29,7 +29,9 @@ public class DailyAnalysisWordsEntity extends BaseEntity {
 
   @Enumerated(EnumType.STRING)
   private DiaryWordType type;
+
   private String text;
+
   private Integer scale;
 
 }

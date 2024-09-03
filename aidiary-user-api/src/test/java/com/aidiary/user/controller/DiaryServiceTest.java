@@ -1,6 +1,5 @@
 package com.aidiary.user.controller;
 
-import com.aidiary.user.model.DiaryResponseBundle;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -56,15 +55,15 @@ class DiaryServiceTest {
                 "오늘의 하루는 마치 '백설공주'의 악마의 마법 거울과 같았다. 자신의 가치를 발견하고 성장하기 위한 여정이 시작되었다."
         );
 
-        List<DiaryResponseBundle.DiaryOutline> monthlyDiaryReports = new ArrayList<>();
-        for (int i = 1; i < 5; i++) {
-            monthlyDiaryReports.add(
-                    DiaryResponseBundle.DiaryOutline.builder()
-                            .entryDate(LocalDate.of(2024, 7, i))
-                            .literarySummary(recentSevenLiterarySummaries.get(i))
-                            .build()
-            );
-        }
+//        List<DiaryResponseBundle.DiaryOutline> monthlyDiaryReports = new ArrayList<>();
+//        for (int i = 1; i < 5; i++) {
+//            monthlyDiaryReports.add(
+//                    DiaryResponseBundle.DiaryOutline.builder()
+//                            .entryDate(LocalDate.of(2024, 7, i))
+//                            .literarySummary(recentSevenLiterarySummaries.get(i))
+//                            .build()
+//            );
+//        }
 
     }
 
