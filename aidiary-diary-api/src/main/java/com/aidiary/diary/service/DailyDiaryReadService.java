@@ -6,7 +6,7 @@ import com.aidiary.diary.model.DiaryResponseBundle;
 
 public interface DailyDiaryReadService {
 
-    DiaryResponseBundle.DiaryDetail getDiaryDetail(Long userId, Long diaryId) throws Exception;
+    DiaryResponseBundle.DiaryDetail getDiaryDetail(UserPrincipal userPrincipal, Long diaryId) throws Exception;
 
     Long getUserDiaryCount(UserPrincipal userPrincipal);
 

@@ -7,7 +7,7 @@ import com.aidiary.diary.model.DiaryResponseBundle;
 
 public interface DailyDiaryWriteService {
 
-    DiaryResponseBundle.DiarySaveRes saveDiaryAfterOpenAiAnalysis(UserPrincipal userPrincipal, DiaryCreateRequest request) throws Exception;
+    DiaryResponseBundle.DiarySaveRes saveDiaryAndAnalyzeByAi(UserPrincipal userPrincipal, DiaryCreateRequest request) throws Exception;
 
     DiaryResponseBundle.DiarySaveRes updateDiaryAfterOpenAiAnalysis(UserPrincipal userPrincipal, Long diaryId, DiaryUpdateRequest request) throws Exception;
 

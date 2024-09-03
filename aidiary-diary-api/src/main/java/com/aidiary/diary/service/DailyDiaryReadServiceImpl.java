@@ -1,23 +1,19 @@
 package com.aidiary.diary.service;
 
-import com.aidiary.common.enums.DiarySentenceType;
-import com.aidiary.common.enums.DiaryWordType;
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.DiaryException;
-import com.aidiary.common.utils.HybridEncryptor;
 import com.aidiary.common.vo.ResponseBundle.UserPrincipal;
 import com.aidiary.core.entity.DailyAnalysisSentencesEntity;
 import com.aidiary.core.entity.DailyAnalysisWordsEntity;
 import com.aidiary.core.entity.DiariesEntity;
 import com.aidiary.core.entity.UsersEntity;
 import com.aidiary.core.service.DiaryDatabaseReadService;
-import com.aidiary.diary.model.DiaryResponseBundle.*;
+import com.aidiary.diary.model.DiaryResponseBundle.DiaryDetail;
+import com.aidiary.diary.service.processor.DailyDiaryContentProcessor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -25,85 +21,36 @@ import java.util.*;
 public class DailyDiaryReadServiceImpl implements DailyDiaryReadService {
 
     private final DiaryDatabaseReadService diaryDatabaseReadService;
-    private final HybridEncryptor hybridEncryptor;
+    private final DailyDiaryContentProcessor dailyDiaryContentProcessor;
 
     @Override
-    public DiaryDetail getDiaryDetail(Long userId, Long diaryId) throws Exception {
+    public DiaryDetail getDiaryDetail(UserPrincipal userPrincipal, Long diaryId) throws Exception {
 
-        DiariesEntity diariesEntity = diaryDatabaseReadService.findDiaryById(diaryId)
+        DiariesEntity diary = diaryDatabaseReadService.findDiaryById(diaryId)
                 .orElseThrow(() -> new DiaryException(ErrorCode.DIARY_NOT_FOUND));
 
-        if (!diariesEntity.getUser().isSameUser(userId)) {
-            throw new DiaryException(ErrorCode.DIARY_OWNER_MISMATCH);
-        }
+        validateIfDiaryIsWrittenByUser(userPrincipal, diary);
+        validateIfDiaryStatusActive(diary);
 
+        List<DailyAnalysisWordsEntity> words = diaryDatabaseReadService.findWordsFromDiary(diary);
+        List<DailyAnalysisSentencesEntity> sentences = diaryDatabaseReadService.findSentencesFromDiary(diary);
+
+        return dailyDiaryContentProcessor.process(diary, words, sentences);
+    }
+
+    private void validateIfDiaryStatusActive(DiariesEntity diariesEntity) {
         if (!diariesEntity.isActivated()) {
             throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
         }
-
-        String diaryContent = hybridEncryptor.decrypt(diariesEntity.getContent());
-
-        Map<DiaryWordType, List<DiaryWord>> wordsByType = diaryWordsByType(diaryDatabaseReadService.findWordsFromDiary(diariesEntity));
-        Map<DiarySentenceType, List<String>> sentencesByType = diarySentencesByType(diaryDatabaseReadService.findSentencesFromDiary(diariesEntity));
-
-        return DiaryDetail.builder()
-                .entryDate(diariesEntity.getEntryDate())
-                .emotions(
-                        DiaryEmotions.builder()
-                                .content(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.EMOTION))
-                                .words(wordsByType.get(DiaryWordType.EMOTION))
-                                .build()
-                )
-                .selfThoughts(
-                        DiarySelfThoughts.builder()
-                                .content(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.SELF_THOUGHT))
-                                .words(wordsByType.get(DiaryWordType.SELF_THOUGHT))
-                                .build()
-                )
-                .coreValues(
-                        DiaryCoreValues.builder()
-                                .content(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.CORE_VALUE))
-                                .words(wordsByType.get(DiaryWordType.CORE_VALUE))
-                                .build()
-                )
-                .recommendedActions(sentencesByType.get(DiarySentenceType.RECOMMENDED_ACTION))
-                .additionals(sentencesByType.get(DiarySentenceType.ADDITIONAL))
-                .literarySummary(getFirstSentenceFromMapByType(sentencesByType, DiarySentenceType.LITERARY_SUMMARY))
-                .diaryContent(diaryContent)
-                .build();
     }
 
-    private Map<DiaryWordType, List<DiaryWord>> diaryWordsByType(List<DailyAnalysisWordsEntity> dailyAnalysisWordsEntities){
-
-        Map<DiaryWordType, List<DiaryWord>> wordsByType = new HashMap<>();
-
-        for (DailyAnalysisWordsEntity dailyAnalysisWordsEntity : dailyAnalysisWordsEntities) {
-            List<DiaryWord> words = wordsByType.getOrDefault(dailyAnalysisWordsEntity.getType(), new ArrayList<>());
-            words.add(DiaryWord.of(dailyAnalysisWordsEntity));
-            wordsByType.put(dailyAnalysisWordsEntity.getType(), words);
+    private void validateIfDiaryIsWrittenByUser(UserPrincipal userPrincipal, DiariesEntity diariesEntity) {
+        if (!diariesEntity.getUser().getId().equals(userPrincipal.userId())) {
+            throw new DiaryException(ErrorCode.DIARY_OWNER_MISMATCH);
         }
-
-        return wordsByType;
     }
 
-    private Map<DiarySentenceType, List<String>> diarySentencesByType(List<DailyAnalysisSentencesEntity> dailyAnalysisSentencesEntities) {
 
-        Map<DiarySentenceType, List<String>> sentencesByType = new HashMap<>();
-
-        for (DailyAnalysisSentencesEntity dailyAnalysisSentencesEntity : dailyAnalysisSentencesEntities) {
-            if (Objects.isNull(dailyAnalysisSentencesEntity) || !StringUtils.hasText(dailyAnalysisSentencesEntity.getContent())) continue;
-            List<String> sentences = sentencesByType.getOrDefault(dailyAnalysisSentencesEntity.getType(), new ArrayList<>());
-            sentences.add(dailyAnalysisSentencesEntity.getContent());
-            sentencesByType.put(dailyAnalysisSentencesEntity.getType(), sentences);
-        }
-
-        return sentencesByType;
-    }
-
-    public String getFirstSentenceFromMapByType(Map<DiarySentenceType, List<String>> sentencesByType, DiarySentenceType diarySentenceType) {
-        List<String> sentences = sentencesByType.getOrDefault(diarySentenceType, new ArrayList<>());
-        return sentences.isEmpty() ? null : sentences.get(0);
-    }
 
     @Override
     public Long getUserDiaryCount(UserPrincipal userPrincipal) {

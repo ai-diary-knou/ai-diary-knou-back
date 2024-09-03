@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -31,14 +32,11 @@ public class DailyDiaryWriteServiceImpl implements DailyDiaryWriteService {
     private final HybridEncryptor hybridEncryptor;
 
     @Override
-    public DiarySaveRes saveDiaryAfterOpenAiAnalysis(UserPrincipal userPrincipal, DiaryCreateRequest request) throws Exception {
+    public DiarySaveRes saveDiaryAndAnalyzeByAi(UserPrincipal userPrincipal, DiaryCreateRequest request) throws Exception {
 
         UsersEntity user = UsersEntity.builder().id(userPrincipal.userId()).build();
-        Optional<DiariesEntity> sameEntryDateDiary = diaryDatabaseReadService.findActiveDiaryByUserAndEntryDate(user, request.entryDate(), DiaryStatus.ACTIVE);
 
-        if (sameEntryDateDiary.isPresent()) {
-            throw new DiaryException(ErrorCode.DIARY_ALREADY_EXIST);
-        }
+        validateIfDiaryAlreadyWrittenAtDate(user, request.entryDate());
 
         DiariesEntity diary = diaryDatabaseWriteService.saveDailyDiary(
                 DiariesEntity.builder()
@@ -54,6 +52,15 @@ public class DailyDiaryWriteServiceImpl implements DailyDiaryWriteService {
         return DiarySaveRes.builder().diaryId(diary.getId()).build();
     }
 
+    private void validateIfDiaryAlreadyWrittenAtDate(UsersEntity user, LocalDate entryDate) {
+
+        Optional<DiariesEntity> sameEntryDateDiary = diaryDatabaseReadService.findActiveDiaryByUserAndEntryDate(user, entryDate, DiaryStatus.ACTIVE);
+
+        if (sameEntryDateDiary.isPresent()) {
+            throw new DiaryException(ErrorCode.DIARY_ALREADY_EXIST);
+        }
+    }
+
     @Override
     public DiarySaveRes updateDiaryAfterOpenAiAnalysis(UserPrincipal userPrincipal, Long diaryId, DiaryUpdateRequest request) throws Exception {
 
@@ -61,9 +68,7 @@ public class DailyDiaryWriteServiceImpl implements DailyDiaryWriteService {
         DiariesEntity originalDiary = diaryDatabaseReadService.findDiaryById(diaryId)
                 .orElseThrow(() -> new DiaryException(ErrorCode.DIARY_NOT_FOUND));
 
-        if (!originalDiary.getUser().isSameUser(user)) {
-            throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
-        }
+        validateIfDiaryIsWrittenByUser(user, originalDiary);
 
         DiariesEntity newDiary = diaryDatabaseWriteService.updateDailyDiary(originalDiary,
                 DiariesEntity.builder()
@@ -77,6 +82,12 @@ public class DailyDiaryWriteServiceImpl implements DailyDiaryWriteService {
         applicationEventPublisher.publishEvent(new DailyDiaryCreateEvent(this, newDiary, user, request.content()));
 
         return DiarySaveRes.builder().diaryId(newDiary.getId()).build();
+    }
+
+    private void validateIfDiaryIsWrittenByUser(UsersEntity user, DiariesEntity originalDiary) {
+        if (!originalDiary.getUser().getId().equals(user.getId())) {
+            throw new DiaryException(ErrorCode.DIARY_NOT_FOUND);
+        }
     }
 
 }

@@ -47,7 +47,7 @@ public class DiaryController {
 
         try {
 
-            return ResponseResult.success(dailyDiaryWriteServiceImpl.saveDiaryAfterOpenAiAnalysis(userPrincipal, request));
+            return ResponseResult.success(dailyDiaryWriteServiceImpl.saveDiaryAndAnalyzeByAi(userPrincipal, request));
 
         } catch (DiaryException e) {
             throw e;
@@ -79,7 +79,7 @@ public class DiaryController {
 
         try {
 
-            return ResponseResult.success(dailyDiaryReadServiceImpl.getDiaryDetail(userPrincipal.userId(), diaryId));
+            return ResponseResult.success(dailyDiaryReadServiceImpl.getDiaryDetail(userPrincipal, diaryId));
 
         } catch (DiaryException e) {
             throw e;
