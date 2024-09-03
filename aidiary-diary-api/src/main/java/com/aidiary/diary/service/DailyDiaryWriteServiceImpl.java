@@ -12,7 +12,7 @@ import com.aidiary.core.service.DiaryDatabaseWriteService;
 import com.aidiary.diary.model.DiaryRequestBundle.DiaryCreateRequest;
 import com.aidiary.diary.model.DiaryRequestBundle.DiaryUpdateRequest;
 import com.aidiary.diary.model.DiaryResponseBundle.DiarySaveRes;
-import com.aidiary.diary.service.event.DailyDiaryCreateEvent;
+import com.aidiary.diary.event.DailyDiaryCreateEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;

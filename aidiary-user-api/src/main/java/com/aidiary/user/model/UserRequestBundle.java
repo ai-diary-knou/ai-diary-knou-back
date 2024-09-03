@@ -4,10 +4,11 @@ import com.aidiary.common.validator.EmailValid;
 import com.aidiary.common.validator.NicknameValid;
 import com.aidiary.common.validator.PasswordValid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public abstract class UserRequestBundle {
 
-    public record UserValidateDuplicateRequest(@NotBlank String type, @NotBlank String value) {}
+    public record DuplicateUserValidateRequest(@NotNull String type, @NotBlank String value) {}
 
     public record UserEmailAuthCodeSentRequest(@NotBlank String type, @NotBlank  @EmailValid String email) {}
 

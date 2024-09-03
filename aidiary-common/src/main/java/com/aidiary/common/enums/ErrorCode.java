@@ -19,6 +19,8 @@ public enum ErrorCode {
 
     // 회원 관련
     USER_ALREADY_REGISTERED(600, "User already registered."),
+    USER_EMAIL_EXIST(600, "User already exist. Please use another email."),
+    USER_NICKNAME_EXIST(600, "User already exist. Please use another nickname."),
     USER_NOT_EXIST(404, "User does not exist. Please check again."),
     USER_LOGIN_FAIL(401, "User Login Failed ({loginAttemptCnt}/5)"),
     USER_LOGIN_LOCKED(401, "User has been locked due to serial login failures."),

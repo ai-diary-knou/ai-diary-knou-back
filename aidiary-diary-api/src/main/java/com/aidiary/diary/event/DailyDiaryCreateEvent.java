@@ -1,4 +1,4 @@
-package com.aidiary.diary.service.event;
+package com.aidiary.diary.event;
 
 import com.aidiary.core.entity.DiariesEntity;
 import com.aidiary.core.entity.UsersEntity;

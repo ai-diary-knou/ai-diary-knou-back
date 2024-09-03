@@ -5,8 +5,11 @@ import com.aidiary.common.exception.UserException;
 import com.aidiary.common.vo.ResponseBundle;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.model.UserRequestBundle.*;
-import com.aidiary.user.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
+import com.aidiary.user.service.UserEmailAuthService;
+import com.aidiary.user.service.UserLoginService;
+import com.aidiary.user.service.UserRegisterService;
+import com.aidiary.user.service.UserInfoService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +23,15 @@ import java.util.Objects;
 @Slf4j
 public class UserController {
 
-    private final UserService userService;
+    private final UserInfoService userInfoService;
+    private final UserRegisterService userRegisterService;
+    private final UserLoginService userLoginService;
+    private final UserEmailAuthService userEmailAuthService;
 
     @GetMapping("/duplicate")
-    public ResponseResult validateDuplicateEmail(UserValidateDuplicateRequest request){
+    public ResponseResult validateDuplicateEmail(DuplicateUserValidateRequest request){
 
-        log.info("request : {}", request);
-        userService.validateUserDuplication(request);
+        userInfoService.validateUserDuplication(request);
 
         return ResponseResult.success();
     }
@@ -34,8 +39,7 @@ public class UserController {
     @PostMapping("/email/auth-code")
     public ResponseResult sendAuthCodeToEmail(@Valid @RequestBody UserEmailAuthCodeSentRequest request) {
 
-        log.info("request : {}", request);
-        userService.createRandomCodeAndSendEmail(request);
+        userEmailAuthService.createRandomCodeAndSendEmail(request);
 
         return ResponseResult.success();
     }
@@ -43,8 +47,7 @@ public class UserController {
     @PostMapping("/email/auth")
     public ResponseResult confirmAuthCode(@Valid @RequestBody UserEmailAndAuthCode request) {
 
-        log.info("request : {}", request);
-        userService.confirmAuthCodeByEmail(request);
+        userEmailAuthService.confirmEmailAuthCode(request);
 
         return ResponseResult.success();
 
@@ -55,8 +58,7 @@ public class UserController {
 
         try {
 
-            log.info("request : {}", request);
-            userService.register(request);
+            userRegisterService.register(request);
             return ResponseResult.success();
 
         } catch (NoSuchAlgorithmException e) {
@@ -69,30 +71,16 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseResult login(@Valid @RequestBody UserLoginRequest request, HttpServletResponse response){
+    public ResponseResult login(@Valid @RequestBody UserLoginRequest request, HttpServletRequest httpServletRequest){
 
         try {
-            log.info("request : {}", request);
-            String accessToken = userService.login(request, response);
+            String accessToken = userLoginService.login(request, httpServletRequest);
             return ResponseResult.success(accessToken);
         } catch (UserException e) {
             throw e;
         } catch (Exception e) {
             log.info("Login Failed :", e);
             throw new UserException("Login Failed by unknown reason.", ErrorCode.USER_LOGIN_FAIL);
-        }
-
-    }
-
-    @PostMapping("/logout")
-    public ResponseResult logout(HttpServletResponse response){
-
-        try {
-            //userService.logout(response);
-            return ResponseResult.success();
-        } catch (Exception e) {
-            log.info("Log out Fail ::", e);
-            throw new UserException(ErrorCode.USER_LOGOUT_FAIL);
         }
 
     }
@@ -115,7 +103,7 @@ public class UserController {
         try {
 
             log.info("request : {}", request);
-            userService.updatePassword(request);
+            userInfoService.updatePassword(request);
             return ResponseResult.success();
 
         } catch (UserException e) {
@@ -131,7 +119,7 @@ public class UserController {
     public ResponseResult updateNickname(ResponseBundle.UserPrincipal userPrincipal,
                                          @Valid @RequestBody UserNicknameUpdateRequest request){
 
-        userService.updateNickname(userPrincipal.userId(), request);
+        userInfoService.updateNickname(userPrincipal.userId(), request);
 
         return ResponseResult.success();
     }

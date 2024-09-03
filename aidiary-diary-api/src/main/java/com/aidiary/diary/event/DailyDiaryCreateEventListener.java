@@ -1,4 +1,4 @@
-package com.aidiary.diary.service.event;
+package com.aidiary.diary.event;
 
 import com.aidiary.common.enums.DiarySentenceType;
 import com.aidiary.common.enums.DiaryWordType;
