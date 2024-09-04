@@ -4,11 +4,13 @@ import com.aidiary.common.enums.EmailSendType;
 import com.aidiary.core.service.UserDatabaseReadService;
 import com.aidiary.core.service.UserDatabaseWriteService;
 import com.aidiary.infrastructure.transport.GoogleMailSender;
-import com.aidiary.user.model.UserRequestBundle.*;
-import com.aidiary.user.service.command.*;
-import com.aidiary.user.service.command.emailAuth.EmailAuthConfirmCommand;
+import com.aidiary.user.model.UserRequestBundle.UserEmailAndAuthCode;
+import com.aidiary.user.model.UserRequestBundle.UserEmailAuthCodeSentRequest;
+import com.aidiary.user.service.command.UserCommandContext;
+import com.aidiary.user.service.command.UserCommandGroup;
 import com.aidiary.user.service.command.emailAuth.EmailAuthCodeCreateCommand;
 import com.aidiary.user.service.command.emailAuth.EmailAuthCodeSendCommand;
+import com.aidiary.user.service.command.emailAuth.EmailAuthConfirmCommand;
 import com.aidiary.user.service.command.emailAuth.EmailAuthCreateOrUpdateCommand;
 import com.aidiary.user.service.command.validation.ValidateEmailAuthCodeExpiredCommand;
 import com.aidiary.user.service.command.validation.ValidateEmailAuthCodeMatchCommand;
@@ -17,7 +19,6 @@ import com.aidiary.user.service.command.validation.ValidateUserNotExistByEmailCo
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class UserEmailAuthService {
 
     public void createRandomCodeAndSendEmail(UserEmailAuthCodeSentRequest request) {
 
-        switch (EmailSendType.of(request.type().toUpperCase(Locale.ROOT))) {
+        switch (EmailSendType.of(request.type())) {
             case REGISTER -> sendRegisterAuthCodeEmail(request);
             case PASSWORD_MODIFICATION -> sendPasswordModificationAuthCodeEmail(request);
         }
@@ -46,7 +47,7 @@ public class UserEmailAuthService {
         userCommandGroup.add(new EmailAuthCodeSendCommand(googleMailSender));
 
         UserCommandContext userCommandContext = UserCommandContext.builder()
-                .emailSendType(EmailSendType.valueOf(request.type().toUpperCase(Locale.ROOT)))
+                .emailSendType(EmailSendType.of(request.type()))
                 .email(request.email())
                 .build();
 
@@ -63,7 +64,7 @@ public class UserEmailAuthService {
         userCommandGroup.add(new EmailAuthCodeSendCommand(googleMailSender));
 
         UserCommandContext userCommandContext = UserCommandContext.builder()
-                .emailSendType(EmailSendType.valueOf(request.type().toUpperCase(Locale.ROOT)))
+                .emailSendType(EmailSendType.of(request.type()))
                 .email(request.email())
                 .build();
 
