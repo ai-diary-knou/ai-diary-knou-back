@@ -1,7 +1,8 @@
-package com.aidiary.user.service.command.validation;
+package com.aidiary.user.service.command.emailAuth;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
+import com.aidiary.core.entity.UserEmailAuthsEntity;
 import com.aidiary.core.service.UserDatabaseReadService;
 import com.aidiary.user.service.command.UserCommand;
 import com.aidiary.user.service.command.UserCommandContext;
@@ -12,15 +13,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ValidateEmailExistCommand implements UserCommand {
+public class EmailAuthSearchByEmailCommand implements UserCommand {
 
     private final UserDatabaseReadService userDatabaseReadService;
 
     @Override
     public void execute(UserCommandContext context) {
-        if (userDatabaseReadService.isUserExistsByEmail(context.getEmail())) {
-            log.info("User Email Already Exist - {}", context.getEmail());
-            throw new UserException(ErrorCode.USER_EMAIL_EXIST);
-        }
+        UserEmailAuthsEntity userEmailAuth = userDatabaseReadService.findUserEmailAuthByEmail(context.getEmail())
+                .orElseThrow(() -> new UserException(ErrorCode.EMAIL_NOT_AUTHORIZED));
+        context.setUserEmailAuth(userEmailAuth);
     }
 }

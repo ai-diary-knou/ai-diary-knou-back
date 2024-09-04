@@ -1,19 +1,19 @@
 package com.aidiary.user.service;
 
 import com.aidiary.common.enums.EmailSendType;
-import com.aidiary.common.enums.ErrorCode;
-import com.aidiary.common.exception.UserException;
-import com.aidiary.common.utils.RandomCodeGenerator;
-import com.aidiary.core.entity.UserEmailAuthsEntity;
 import com.aidiary.core.service.UserDatabaseReadService;
 import com.aidiary.core.service.UserDatabaseWriteService;
 import com.aidiary.infrastructure.transport.GoogleMailSender;
 import com.aidiary.user.model.UserRequestBundle.*;
 import com.aidiary.user.service.command.*;
+import com.aidiary.user.service.command.emailAuth.EmailAuthConfirmCommand;
+import com.aidiary.user.service.command.emailAuth.EmailAuthCodeCreateCommand;
+import com.aidiary.user.service.command.emailAuth.EmailAuthCodeSendCommand;
+import com.aidiary.user.service.command.emailAuth.EmailAuthCreateOrUpdateCommand;
 import com.aidiary.user.service.command.validation.ValidateEmailAuthCodeExpiredCommand;
 import com.aidiary.user.service.command.validation.ValidateEmailAuthCodeMatchCommand;
-import com.aidiary.user.service.command.validation.ValidateEmailExistCommand;
-import com.aidiary.user.service.command.validation.ValidateEmailNotExistCommand;
+import com.aidiary.user.service.command.validation.ValidateUserExistByEmailCommand;
+import com.aidiary.user.service.command.validation.ValidateUserNotExistByEmailCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,15 +40,14 @@ public class UserEmailAuthService {
     private void sendRegisterAuthCodeEmail(UserEmailAuthCodeSentRequest request) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();
-        userCommandGroup.add(new ValidateEmailExistCommand(userDatabaseReadService));
-        userCommandGroup.add(new UserEmailAuthCreateOrUpdateCommand(userDatabaseReadService, userDatabaseWriteService));
-        userCommandGroup.add(new EmailAuthSendCommand(googleMailSender));
+        userCommandGroup.add(new ValidateUserExistByEmailCommand(userDatabaseReadService));
+        userCommandGroup.add(new EmailAuthCodeCreateCommand());
+        userCommandGroup.add(new EmailAuthCreateOrUpdateCommand(userDatabaseReadService, userDatabaseWriteService));
+        userCommandGroup.add(new EmailAuthCodeSendCommand(googleMailSender));
 
-        String randomCode = RandomCodeGenerator.getInstance().createAlphanumericCodeWithSpecialKeys();
         UserCommandContext userCommandContext = UserCommandContext.builder()
                 .emailSendType(EmailSendType.valueOf(request.type().toUpperCase(Locale.ROOT)))
                 .email(request.email())
-                .code(randomCode)
                 .build();
 
         userCommandGroup.execute(userCommandContext);
@@ -58,15 +57,14 @@ public class UserEmailAuthService {
     private void sendPasswordModificationAuthCodeEmail(UserEmailAuthCodeSentRequest request) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();
-        userCommandGroup.add(new ValidateEmailNotExistCommand(userDatabaseReadService));
-        userCommandGroup.add(new UserEmailAuthCreateOrUpdateCommand(userDatabaseReadService, userDatabaseWriteService));
-        userCommandGroup.add(new EmailAuthSendCommand(googleMailSender));
+        userCommandGroup.add(new ValidateUserNotExistByEmailCommand(userDatabaseReadService));
+        userCommandGroup.add(new EmailAuthCodeCreateCommand());
+        userCommandGroup.add(new EmailAuthCreateOrUpdateCommand(userDatabaseReadService, userDatabaseWriteService));
+        userCommandGroup.add(new EmailAuthCodeSendCommand(googleMailSender));
 
-        String randomCode = RandomCodeGenerator.getInstance().createAlphanumericCodeWithSpecialKeys();
         UserCommandContext userCommandContext = UserCommandContext.builder()
                 .emailSendType(EmailSendType.valueOf(request.type().toUpperCase(Locale.ROOT)))
                 .email(request.email())
-                .code(randomCode)
                 .build();
 
         userCommandGroup.execute(userCommandContext);
@@ -75,16 +73,12 @@ public class UserEmailAuthService {
 
     public void confirmEmailAuthCode(UserEmailAndAuthCode request) {
 
-        UserEmailAuthsEntity userEmailAuthsEntity = userDatabaseReadService.findUserEmailAuthByEmail(request.email())
-                .orElseThrow(() -> new UserException(ErrorCode.EMAIL_AUTH_FAIL));
-
         UserCommandGroup userCommandGroup = new UserCommandGroup();
-        userCommandGroup.add(new ValidateEmailAuthCodeMatchCommand());
+        userCommandGroup.add(new ValidateEmailAuthCodeMatchCommand(userDatabaseReadService));
         userCommandGroup.add(new ValidateEmailAuthCodeExpiredCommand());
-        userCommandGroup.add(new ConfirmEmailAuthCodeCommand(userDatabaseWriteService));
+        userCommandGroup.add(new EmailAuthConfirmCommand(userDatabaseWriteService));
 
         UserCommandContext userCommandContext = UserCommandContext.builder()
-                .userEmailAuth(userEmailAuthsEntity)
                 .email(request.email())
                 .code(request.code())
                 .build();

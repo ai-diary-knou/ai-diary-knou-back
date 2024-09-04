@@ -9,7 +9,7 @@ import java.security.PublicKey;
 class RSAUtilTest {
 
     @Test
-    public void testRSAUtil() throws Exception{
+    public void RSA_암호화_테스트() throws Exception{
 
         String seed = "aidiarynewclearbumb";
 

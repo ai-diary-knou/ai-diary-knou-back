@@ -1,4 +1,4 @@
-package com.aidiary.user.event;
+package com.aidiary.user.service.event;
 
 import com.aidiary.core.service.UserDatabaseWriteService;
 import lombok.RequiredArgsConstructor;

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 
 import static com.aidiary.common.enums.UserStatus.BLOCKED;
@@ -25,16 +26,14 @@ public class ValidateLoginPasswordMatchCommand implements UserCommand {
     public void execute(UserCommandContext context) {
         try {
             if (!context.getUser().getPassword().equals(SHA256Util.getHashString(context.getComparingPasswordPlain()))) {
-
-                context.getUser().updateLoginAttemptCnt(context.getUser().getLoginAttemptCnt() + 1);
-                if (context.getUser().getLoginAttemptCnt() == 5) {
-                    context.getUser().updateStatus(BLOCKED);
-                }
-                userDatabaseWriteService.save(context.getUser());
-                throw new UserException(getLoginFailMessage(context.getUser().getLoginAttemptCnt()), ErrorCode.USER_LOGIN_FAIL);
+                userDatabaseWriteService.increaseLoginAttemptCntAndLockIfApproachMaxAttempt(context.getUser());
+                throw new InvalidParameterException();
             }
+        } catch (InvalidParameterException e) {
+            log.info("비밀번호가 불일치 :: ", e);
+            throw new UserException(getLoginFailMessage(context.getUser().getLoginAttemptCnt()), ErrorCode.USER_LOGIN_FAIL);
         } catch (NoSuchAlgorithmException e) {
-            log.info("ValidatePasswordHashMatchCommand.execute :: ", e);
+            log.info("SHA 알고리즘 해싱에서 문제 발생 :: ", e);
             throw new UserException(getLoginFailMessage(context.getUser().getLoginAttemptCnt()), ErrorCode.USER_LOGIN_FAIL);
         }
     }

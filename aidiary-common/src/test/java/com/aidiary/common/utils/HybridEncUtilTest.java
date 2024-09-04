@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HybridEncUtilTest {
 
     @Test
-    public void testHybridEncUtil() throws Exception {
+    public void 하이브리드_암호화_테스트() throws Exception {
 
         // RSA 공개키와 비밀키 생성
         String seed = "aidiarynewclearbumb";

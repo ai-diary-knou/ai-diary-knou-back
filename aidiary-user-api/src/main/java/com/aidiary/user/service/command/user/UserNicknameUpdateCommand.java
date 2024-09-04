@@ -1,7 +1,8 @@
-package com.aidiary.user.service.command;
+package com.aidiary.user.service.command.user;
 
-import com.aidiary.core.entity.UsersEntity;
 import com.aidiary.core.service.UserDatabaseWriteService;
+import com.aidiary.user.service.command.UserCommand;
+import com.aidiary.user.service.command.UserCommandContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -9,16 +10,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class UpdateNicknameCommand implements UserCommand {
+public class UserNicknameUpdateCommand implements UserCommand {
 
     private final UserDatabaseWriteService userDatabaseWriteService;
 
     @Override
     public void execute(UserCommandContext context) {
 
-        UsersEntity usersEntity = context.getUser();
-        usersEntity.updateNickname(context.getNickname());
-        userDatabaseWriteService.save(usersEntity);
+        userDatabaseWriteService.updateUserNickname(context.getUser(), context.getNickname());
 
     }
 

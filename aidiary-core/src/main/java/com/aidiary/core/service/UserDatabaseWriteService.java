@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static com.aidiary.common.enums.UserStatus.BLOCKED;
+
 @Service
 @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @RequiredArgsConstructor
@@ -27,8 +29,36 @@ public class UserDatabaseWriteService {
         return jpaUsersRepository.save(usersEntity);
     }
 
+    public void updateUserPassword(UsersEntity usersEntity, String newPasswordHash) {
+        usersEntity.updatePassword(newPasswordHash);
+    }
+
+    public void updateUserNickname(UsersEntity usersEntity, String newNickname) {
+        usersEntity.updateNickname(newNickname);
+    }
+
+    public void increaseLoginAttemptCntAndLockIfApproachMaxAttempt(UsersEntity usersEntity){
+        usersEntity.updateLoginAttemptCnt(usersEntity.getLoginAttemptCnt() + 1);
+        if (usersEntity.getLoginAttemptCnt() == 5) {
+            usersEntity.updateStatus(BLOCKED);
+        }
+    }
+
+    public void resetUserLoginAttemptCnt(UsersEntity usersEntity) {
+        usersEntity.updateLoginAttemptCnt(0);
+    }
+
     public UserEmailAuthsEntity save(UserEmailAuthsEntity userEmailAuthsEntity) {
         return jpaUserEmailAuthsRepository.save(userEmailAuthsEntity);
+    }
+
+    public void updateUserEmailAuthCodeAndResetConfirmedDate(UserEmailAuthsEntity originalUserEmailAuthEntity, String authCode) {
+        originalUserEmailAuthEntity.updateCreatedAt(LocalDateTime.now());
+        originalUserEmailAuthEntity.updateCodeAndResetConfirmedAt(authCode);
+    }
+
+    public void confirmUserEmailAuth(UserEmailAuthsEntity userEmailAuthsEntity){
+        userEmailAuthsEntity.updateConfirmedAt(LocalDateTime.now());
     }
 
     public UserLoginHistoriesEntity save(UserLoginHistoriesEntity userLoginHistoriesEntity) {

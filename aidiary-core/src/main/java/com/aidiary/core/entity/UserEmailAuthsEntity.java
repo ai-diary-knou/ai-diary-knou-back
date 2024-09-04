@@ -28,7 +28,7 @@ public class UserEmailAuthsEntity{
 
     private LocalDateTime confirmedAt;
 
-    public void updateCodeAndConfirmedAt(String code) {
+    public void updateCodeAndResetConfirmedAt(String code) {
         this.code = code;
         this.confirmedAt = null;
     }
