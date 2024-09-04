@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AESUtilTest {
 
     @Test
-    public void testAESUtil() throws Exception{
+    public void AES_암호화_테스트_Seed_iv() throws Exception{
 
         String seed = "aidiarynewclearbumb";
 
@@ -42,7 +42,7 @@ class AESUtilTest {
     }
 
     @Test
-    public void testSimpleAESUtil() throws Exception {
+    public void AES_암호화_테스트_랜덤iv() throws Exception {
 
         // 1. 테스트용 비밀키 생성
         SecretKey key = AESUtil.generateKey();

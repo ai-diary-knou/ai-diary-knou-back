@@ -2,7 +2,6 @@ package com.aidiary.user.service.command.validation;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
-import com.aidiary.core.entity.UserEmailAuthsEntity;
 import com.aidiary.core.service.UserDatabaseReadService;
 import com.aidiary.user.service.command.UserCommand;
 import com.aidiary.user.service.command.UserCommandContext;
@@ -13,22 +12,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class ValidateEmailAuthCodeMatchCommand implements UserCommand {
+public class ValidateUserNotExistByEmailCommand implements UserCommand {
 
     private final UserDatabaseReadService userDatabaseReadService;
 
     @Override
     public void execute(UserCommandContext context) {
-
-        UserEmailAuthsEntity userEmailAuthsEntity = userDatabaseReadService.findUserEmailAuthByEmail(context.getEmail())
-                .orElseThrow(() -> new UserException(ErrorCode.EMAIL_AUTH_FAIL));
-
-        context.setUserEmailAuth(userEmailAuthsEntity);
-
-        if (!context.getUserEmailAuth().getCode().equals(context.getCode())) {
-            log.info("인증 코드가 불일치 합니다.");
-            throw new UserException(ErrorCode.EMAIL_AUTH_FAIL);
+        if (!userDatabaseReadService.isUserExistsByEmail(context.getEmail())) {
+            throw new UserException(ErrorCode.USER_NOT_EXIST);
         }
-
     }
 }

@@ -36,6 +36,7 @@ class OpenAiTransporterTest {
         System.out.println("JSON Result: " + jsonResult);
         assertNotNull(openAiContent);
 
+//        ====== 테스트 결과 예시 ======
 //        JSON Result: {
 //            "properties" : {
 //                "emotions" : {

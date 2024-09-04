@@ -1,6 +1,8 @@
-package com.aidiary.user.service.command;
+package com.aidiary.user.service.command.user;
 
 import com.aidiary.core.service.UserDatabaseWriteService;
+import com.aidiary.user.service.command.UserCommand;
+import com.aidiary.user.service.command.UserCommandContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -10,7 +12,7 @@ import static com.aidiary.common.enums.UserStatus.ACTIVE;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class UnlockUserCommand implements UserCommand {
+public class UserStatusUnlockCommand implements UserCommand {
 
     private final UserDatabaseWriteService userDatabaseWriteService;
 

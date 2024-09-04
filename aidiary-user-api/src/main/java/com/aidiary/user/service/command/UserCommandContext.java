@@ -14,8 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class UserCommandContext {
+
     private UsersEntity user;
     private UserEmailAuthsEntity userEmailAuth;
+    private Long userId;
     private String email;
     private String nickname;
     private EmailSendType emailSendType;
@@ -27,4 +29,6 @@ public class UserCommandContext {
     private String ipAddress;
     private String device;
     private LocalDateTime currentTime;
+    private String accessToken;
+
 }

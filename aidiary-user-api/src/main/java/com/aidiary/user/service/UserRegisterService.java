@@ -8,8 +8,9 @@ import com.aidiary.core.service.UserDatabaseWriteService;
 import com.aidiary.user.model.UserRequestBundle.*;
 import com.aidiary.user.service.command.UserCommandContext;
 import com.aidiary.user.service.command.UserCommandGroup;
+import com.aidiary.user.service.command.user.UserCreateCommand;
 import com.aidiary.user.service.command.validation.ValidateEmailAuthCodeConfirmedCommand;
-import com.aidiary.user.service.command.validation.ValidateEmailExistCommand;
+import com.aidiary.user.service.command.validation.ValidateUserExistByEmailCommand;
 import com.aidiary.user.service.command.validation.ValidateRepasswordMatchCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +28,10 @@ public class UserRegisterService {
     public void register(UserRegisterRequest request) throws NoSuchAlgorithmException {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();
-        userCommandGroup.add(new ValidateEmailExistCommand(userDatabaseReadService));
+        userCommandGroup.add(new ValidateUserExistByEmailCommand(userDatabaseReadService));
         userCommandGroup.add(new ValidateRepasswordMatchCommand());
         userCommandGroup.add(new ValidateEmailAuthCodeConfirmedCommand(userDatabaseReadService));
+        userCommandGroup.add(new UserCreateCommand(userDatabaseWriteService));
 
         UserCommandContext userCommandContext = UserCommandContext.builder()
                 .email(request.email())
@@ -39,16 +41,6 @@ public class UserRegisterService {
                 .build();
 
         userCommandGroup.execute(userCommandContext);
-
-        userDatabaseWriteService.save(
-                UsersEntity.builder()
-                        .email(request.email())
-                        .nickname(request.nickname())
-                        .password(SHA256Util.getHashString(request.password()))
-                        .status(UserStatus.ACTIVE)
-                        .loginAttemptCnt(0)
-                        .build()
-        );
 
     }
 
