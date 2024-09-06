@@ -24,14 +24,12 @@ spring:
               /api/v1/users/email/auth-code,
               /api/v1/users/email/auth,
               /api/v1/users/login,
-              /api/v1/users/password,
-              /api/v1/users/me
+              /api/v1/users/password
             post:
               /api/v1/users
           authenticated:
             /api/v1/users/me,
             /api/v1/users/nickname,
-            /api/v1/users/password,
             /api/v1/users/logout,
             /api/v1/diaries/**
       globalcors:

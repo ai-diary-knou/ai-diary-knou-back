@@ -15,6 +15,9 @@ import com.aidiary.user.service.command.validation.ValidateRepasswordMatchComman
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.security.NoSuchAlgorithmException;
 
 @Service
@@ -25,6 +28,7 @@ public class UserRegisterService {
     private final UserDatabaseReadService userDatabaseReadService;
     private final UserDatabaseWriteService userDatabaseWriteService;
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void register(UserRegisterRequest request) throws NoSuchAlgorithmException {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();

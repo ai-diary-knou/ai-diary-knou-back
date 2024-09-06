@@ -2,7 +2,7 @@ package com.aidiary.user.controller;
 
 import com.aidiary.common.enums.ErrorCode;
 import com.aidiary.common.exception.UserException;
-import com.aidiary.common.vo.ResponseBundle;
+import com.aidiary.common.vo.ResponseBundle.UserPrincipal;
 import com.aidiary.common.vo.ResponseBundle.ResponseResult;
 import com.aidiary.user.model.UserRequestBundle.*;
 import com.aidiary.user.service.UserEmailAuthService;
@@ -86,7 +86,7 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseResult getTokenUserClaims(ResponseBundle.UserPrincipal userPrincipal){
+    public ResponseResult getTokenUserClaims(@RequestAttribute("userPrincipal") UserPrincipal userPrincipal){
 
         try {
             return ResponseResult.success(Objects.requireNonNull(userPrincipal));
@@ -116,7 +116,7 @@ public class UserController {
     }
 
     @PutMapping("/nickname")
-    public ResponseResult updateNickname(ResponseBundle.UserPrincipal userPrincipal,
+    public ResponseResult updateNickname(@RequestAttribute("userPrincipal") UserPrincipal userPrincipal,
                                          @Valid @RequestBody UserNicknameUpdateRequest request){
 
         userInfoService.updateNickname(userPrincipal.userId(), request);

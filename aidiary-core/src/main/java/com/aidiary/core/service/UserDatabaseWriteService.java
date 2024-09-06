@@ -8,8 +8,6 @@ import com.aidiary.core.repository.jpa.JpaUserLoginHistoriesRepository;
 import com.aidiary.core.repository.jpa.JpaUsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -17,7 +15,6 @@ import java.util.Optional;
 import static com.aidiary.common.enums.UserStatus.BLOCKED;
 
 @Service
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @RequiredArgsConstructor
 public class UserDatabaseWriteService {
 

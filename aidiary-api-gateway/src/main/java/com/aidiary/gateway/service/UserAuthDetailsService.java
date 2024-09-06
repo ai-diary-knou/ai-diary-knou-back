@@ -23,7 +23,7 @@ public class UserAuthDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UsersEntity usersEntity = jpaUsersRepository.findByEmail(email)
                 .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_EXIST));
-        log.info("loadUserByUserName : id = {}, email = {}", usersEntity.getId(), usersEntity.getEmail());
+        log.info("loadUserByUserName : id = {}, email = {}, nickname - {}", usersEntity.getId(), usersEntity.getEmail(), usersEntity.getNickname());
         return UserClaims.builder()
                 .userId(usersEntity.getId())
                 .email(usersEntity.getEmail())

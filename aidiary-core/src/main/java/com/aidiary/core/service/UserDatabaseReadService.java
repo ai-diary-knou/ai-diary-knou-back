@@ -1,6 +1,5 @@
 package com.aidiary.core.service;
 
-import com.aidiary.common.enums.EmailSendType;
 import com.aidiary.core.entity.QUserEmailAuthsEntity;
 import com.aidiary.core.entity.UserEmailAuthsEntity;
 import com.aidiary.core.entity.UserLoginHistoriesEntity;
@@ -12,14 +11,12 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @Slf4j
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserDatabaseReadService {
 

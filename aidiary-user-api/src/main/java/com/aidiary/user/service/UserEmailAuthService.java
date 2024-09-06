@@ -3,7 +3,6 @@ package com.aidiary.user.service;
 import com.aidiary.common.enums.EmailSendType;
 import com.aidiary.core.service.UserDatabaseReadService;
 import com.aidiary.core.service.UserDatabaseWriteService;
-import com.aidiary.infrastructure.transport.GoogleMailSender;
 import com.aidiary.user.model.UserRequestBundle.UserEmailAndAuthCode;
 import com.aidiary.user.model.UserRequestBundle.UserEmailAuthCodeSentRequest;
 import com.aidiary.user.service.command.UserCommandContext;
@@ -18,7 +17,10 @@ import com.aidiary.user.service.command.validation.ValidateUserExistByEmailComma
 import com.aidiary.user.service.command.validation.ValidateUserNotExistByEmailCommand;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +29,9 @@ public class UserEmailAuthService {
 
     private final UserDatabaseReadService userDatabaseReadService;
     private final UserDatabaseWriteService userDatabaseWriteService;
-    private final GoogleMailSender googleMailSender;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void createRandomCodeAndSendEmail(UserEmailAuthCodeSentRequest request) {
 
         switch (EmailSendType.of(request.type())) {
@@ -44,7 +47,7 @@ public class UserEmailAuthService {
         userCommandGroup.add(new ValidateUserExistByEmailCommand(userDatabaseReadService));
         userCommandGroup.add(new EmailAuthCodeCreateCommand());
         userCommandGroup.add(new EmailAuthCreateOrUpdateCommand(userDatabaseReadService, userDatabaseWriteService));
-        userCommandGroup.add(new EmailAuthCodeSendCommand(googleMailSender));
+        userCommandGroup.add(new EmailAuthCodeSendCommand(applicationEventPublisher));
 
         UserCommandContext userCommandContext = UserCommandContext.builder()
                 .emailSendType(EmailSendType.of(request.type()))
@@ -61,7 +64,7 @@ public class UserEmailAuthService {
         userCommandGroup.add(new ValidateUserNotExistByEmailCommand(userDatabaseReadService));
         userCommandGroup.add(new EmailAuthCodeCreateCommand());
         userCommandGroup.add(new EmailAuthCreateOrUpdateCommand(userDatabaseReadService, userDatabaseWriteService));
-        userCommandGroup.add(new EmailAuthCodeSendCommand(googleMailSender));
+        userCommandGroup.add(new EmailAuthCodeSendCommand(applicationEventPublisher));
 
         UserCommandContext userCommandContext = UserCommandContext.builder()
                 .emailSendType(EmailSendType.of(request.type()))
@@ -72,6 +75,7 @@ public class UserEmailAuthService {
 
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void confirmEmailAuthCode(UserEmailAndAuthCode request) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();

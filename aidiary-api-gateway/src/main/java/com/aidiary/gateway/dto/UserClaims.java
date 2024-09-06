@@ -40,7 +40,7 @@ public class UserClaims implements UserDetails {
     public UserClaims(UsersEntity usersEntity) {
         this.userId = usersEntity.getId();
         this.email = usersEntity.getEmail();
-        this.nickname = usersEntity.getEmail();
+        this.nickname = usersEntity.getNickname();
         this.password = usersEntity.getPassword();
         this.status = usersEntity.getStatus();
         this.loginAttemptCnt = usersEntity.getLoginAttemptCnt();
