@@ -20,6 +20,9 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -77,7 +80,19 @@ public class JwtAuthenticationFilter implements WebFilter {
             }
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(realDatabaseUserClaim, null, realDatabaseUserClaim.getAuthorities());
-            return chain.filter(exchange)
+
+            ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                    .header("X-User-Id", String.valueOf(jwtTokenInfo.userId()))
+                    .header("X-User-Email", jwtTokenInfo.email())
+                    .header("X-User-Nickname", URLEncoder.encode(jwtTokenInfo.nickname(), StandardCharsets.UTF_8))
+                    .build();
+
+            log.info("Modified Request Headers: X-User-Id: {}, X-User-Email: {}, X-User-Nickname: {}",
+                    modifiedRequest.getHeaders().getFirst("X-User-Id"),
+                    modifiedRequest.getHeaders().getFirst("X-User-Email"),
+                    modifiedRequest.getHeaders().getFirst("X-User-Nickname"));
+
+            return chain.filter(exchange.mutate().request(modifiedRequest).build())
                     .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
         });
     }
