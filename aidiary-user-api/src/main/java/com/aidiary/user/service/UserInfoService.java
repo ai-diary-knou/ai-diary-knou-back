@@ -14,6 +14,8 @@ import com.aidiary.user.service.command.validation.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
@@ -51,12 +53,14 @@ public class UserInfoService {
         userCommandContext.setEmail(request.value());
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void updatePassword(UserPasswordUpdateRequest request) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();
         userCommandGroup.add(new UserSearchByEmailCommand(userDatabaseReadService));
         userCommandGroup.add(new EmailAuthSearchByEmailCommand(userDatabaseReadService));
         userCommandGroup.add(new ValidateUserSignedOutOrLockedCommand());
+        userCommandGroup.add(new ValidateEmailAuthCodeMatchCommand(userDatabaseReadService));
         userCommandGroup.add(new ValidateEmailAuthCodeConfirmedCommand(userDatabaseReadService));
         userCommandGroup.add(new ValidateRepasswordMatchCommand());
         userCommandGroup.add(new UserPasswordUpdateCommand(userDatabaseWriteService));
@@ -74,6 +78,7 @@ public class UserInfoService {
 
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void updateNickname(Long userId, UserNicknameUpdateRequest request) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();

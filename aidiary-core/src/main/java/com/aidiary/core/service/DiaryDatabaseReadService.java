@@ -13,7 +13,6 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +22,6 @@ import java.util.Optional;
 import static com.aidiary.common.enums.DiaryStatus.ACTIVE;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class DiaryDatabaseReadService {
 

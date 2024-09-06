@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class UserEmailAuthService {
     private final UserDatabaseWriteService userDatabaseWriteService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void createRandomCodeAndSendEmail(UserEmailAuthCodeSentRequest request) {
 
         switch (EmailSendType.of(request.type())) {
@@ -72,6 +75,7 @@ public class UserEmailAuthService {
 
     }
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public void confirmEmailAuthCode(UserEmailAndAuthCode request) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();

@@ -9,13 +9,10 @@ import com.aidiary.core.repository.jpa.JpaDailyAnalysisWordsRepository;
 import com.aidiary.core.repository.jpa.JpaDiariesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
 @RequiredArgsConstructor
 public class DiaryDatabaseWriteService {
 

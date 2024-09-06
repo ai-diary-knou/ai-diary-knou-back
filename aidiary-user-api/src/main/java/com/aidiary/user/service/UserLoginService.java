@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ public class UserLoginService {
     private final JwtTokenProvider jwtTokenProvider;
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     public String login(UserLoginRequest request, HttpServletRequest httpServletRequest) {
 
         UserCommandGroup userCommandGroup = new UserCommandGroup();
