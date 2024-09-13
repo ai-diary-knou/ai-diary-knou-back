@@ -1,7 +1,7 @@
 # Backend
 
 ## MVP Core Skills
-- AI Text Mining / Image Creation(차후)
+- AI Text Analysis / Image Creation(차후)
     - Open AI API를 활용하여 일기 문단 분석
     - prompt1 : emotion, self-thought, core value, todo
     - prompt2 : Find a poetic literacy sentence from books or generate one related to the situation in korean
