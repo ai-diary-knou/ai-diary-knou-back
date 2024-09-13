@@ -1,40 +1,24 @@
 # Backend
 
 ## MVP Core Skills
-- AI Text Mining / Image Creation
-    - Open AI API를 활용하여 일기 문단에서 텍스트 마이닝
+- AI Text Mining / Image Creation(차후)
+    - Open AI API를 활용하여 일기 문단 분석
     - prompt1 : emotion, self-thought, core value, todo
     - prompt2 : Find a poetic literacy sentence from books or generate one related to the situation in korean
-    - AI Image 생성을 통해 하루 일기에 맞는 이미지 자동 생성
+    - AI Image 생성을 통해 하루 일기에 맞는 이미지 자동 생성(차후)
+- 암호화
+    - AES+RSA를 통해 토큰 정보 및 일기 문단 암복호화
+    - SHA를 통해 비밀번호 단방향 암호화
 - Spring Cloud (MSA)
     - Spring Cloud의 Discovery, Gateway 기능 사용.
     - Eureka를 통해 MSA 모듈 관리
 - Database
-    - H2 
-    - AWS RDS (mysql or postgre)
-- Devops
-    - EC2 / Docker
-    - RDS
-    - Jenkins
+    - Azure Mysql Database
+- Devops & ETC
+    - AWS EC2/Load balancer/SSL Certificate
+    - Gabia Domain
+    - Docker/Jenkins
 
-## Convention
-### Domain Driven Design Structure
-```
-ㄴ presentation 
-  - UserController
-ㄴ application
-  ㄴ dto
-  ㄴ service
-ㄴ domain
-  ㄴ entity
-  ㄴ repository
-    - UserRepository
-ㄴ infrastructure
-  ㄴ config
-  ㄴ persistence
-    - UserRepositoryImpl
-  ㄴ transport
-``` 
 ### Restful API
 > 1. URI에 정보의 자원을 복수형 명사로 표시 ex. /users
 > 2. 행위 표시는 GET/POST/PUT/PATCH/DELETE를 적절히 사용
